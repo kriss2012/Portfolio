@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Krishna Patil — Portfolio</title>
+  <meta name="description" content="Responsive personal portfolio of Krishna Patil — Student, BCA (Computational Science)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1220;          
+      --panel:#0f172a;       
+      --muted:#94a3b8;       
+      --text:#e2e8f0;        
+      --brand:#1d9bf0;       
+      --brand-2:#22d3ee;     
+      --card:#111827ee;
+      --ring: 0 0 0 3px rgba(29,155,240,.35);
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(2,8,23,.5);
+    }
+
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif; color:var(--text); background:radial-gradient(1200px 800px at 10% -10%, #102342 0%, transparent 60%),
+      radial-gradient(900px 700px at 110% 10%, #0a2a37 0%, transparent 60%), var(--bg);
+    }
+
+
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1100px, 92%); margin-inline:auto}
+
+
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50; backdrop-filter: blur(10px);
+      background:linear-gradient(180deg, rgba(10,16,28,.85), rgba(10,16,28,.35));
+      border-bottom:1px solid rgba(148,163,184,.1);
+    }
+    .nav{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px}
+    .brand .dot{width:10px; height:10px; border-radius:999px; background:linear-gradient(45deg,var(--brand),var(--brand-2)); box-shadow:0 0 20px rgba(34,211,238,.8)}
+    .links{display:flex; gap:10px; flex-wrap:wrap}
+    .links a{padding:10px 14px; border-radius:999px; color:var(--text); opacity:.9; transition:.2s ease; border:1px solid transparent}
+    .links a:hover{opacity:1; border-color:rgba(148,163,184,.2); background:rgba(15,23,42,.6)}
+    .btn{display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.2); background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); box-shadow:inset 0 1px 0 rgba(255,255,255,.05); transition:.2s}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand-2)); color:#06121b; font-weight:700; border:none}
+
+
+    /* Hero */
+    .hero{display:grid; grid-template-columns:1.2fr .8fr; gap:28px; align-items:center; padding:48px 0 28px}
+    .hero-card{background:rgba(2,8,23,.6); border:1px solid rgba(148,163,184,.18); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow)}
+    .title{font-size:clamp(28px, 3.6vw, 44px); line-height:1.1; margin:0 0 8px; font-weight:800}
+    .role{color:var(--muted); font-weight:600; letter-spacing:.3px; margin-bottom:18px}
+    .summary{color:#c7d2fe; opacity:.95}
+    .grid-2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
+    .card{background:var(--card); border:1px solid rgba(148,163,184,.12); border-radius:var(--radius); padding:18px}
+
+
+    /* Sections */
+    section{padding:36px 0}
+    .section-title{font-weight:800; letter-spacing:.4px; font-size:clamp(20px,2.5vw,26px); margin:0 0 16px}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid rgba(148,163,184,.2); border-radius:999px; color:#dbeafe; background:rgba(15,23,42,.45)}
+    .list{display:flex; flex-wrap:wrap; gap:10px}
+
+
+    /* Skills grid */
+    .skills{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+    .skill{padding:12px 14px; background:rgba(2,8,23,.6); border:1px solid rgba(148,163,184,.14); border-radius:12px}
+
+
+    /* Education */
+    .edu-item{display:grid; gap:6px; padding:18px; background:rgba(2,8,23,.6); border:1px solid rgba(148,163,184,.14); border-radius:12px}
+    .edu-item small{color:var(--muted)}
+
+
+    /* Personal details */
+    .pd-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+    .pd{padding:12px 14px; background:rgba(2,8,23,.6); border:1px solid rgba(148,163,184,.14); border-radius:12px}
+
+
+    /* Languages */
+    .lang{display:grid; gap:8px}
+    .meter{height:10px; border-radius:999px; background:rgba(148,163,184,.18); overflow:hidden}
+    .meter > i{display:block; height:100%; width:80%; background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+
+
+    /* Projects */
+    .projects{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+    .project{background:rgba(2,8,23,.6); border:1px solid rgba(148,163,184,.14); border-radius:16px; overflow:hidden; display:flex; flex-direction:column}
+    .project .cover{
+      aspect-ratio:16/9;
+      background:linear-gradient(120deg, rgba(29,155,240,.4), rgba(34,211,238,.25));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .project .cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      border-radius:0;
+      display:block;
+    }
+    .project .body{padding:16px; display:flex; flex-direction:column; gap:10px}
+    .project h4{margin:0; font-size:18px}
+    .project p{margin:0; color:var(--muted)}
+    .project .actions{margin-top:auto; padding:16px; display:flex; gap:10px}
+
+
+    /* Footer */
+    footer{padding:28px 0; color:var(--muted); border-top:1px solid rgba(148,163,184,.1)}
+
+
+    /* Utilities */
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .stack{display:grid; gap:14px}
+    .muted{color:var(--muted)}
+
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr;}
+      .projects{grid-template-columns:1fr 1fr}
+      .grid-2{grid-template-columns:1fr}
+      .pd-grid{grid-template-columns:1fr}
+    }
+    @media (max-width: 580px){
+      .links{display:none}
+      .projects{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand"><span class="dot"></span> Krishna Patil</div>
+      <nav class="links" aria-label="Primary">
+        <a href="#home">Home</a>
+        <a href="#skills">Skills</a>
+        <a href="#education">Education</a>
+        <a href="#projects">Projects</a>
+        <a href="#">Games</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="btn primary" href="#" title="Open Virtual World">Workings</a>
+    </div>
+  </header>
+
+  <main id="home" class="container hero">
+    <section class="hero-card">
+      <h1 class="title">Krishna Patil</h1>
+      <div class="role">Student — BCA (Bachelor of Computer Applications.)</div>
+      <p class="summary">
+        Organized and dependable candidate successful at managing multiple priorities with a positive attitude. Willing to take on added responsibilities to meet team goals. Pursuing a full‑time role that presents professional challenges and leverages interpersonal skills, effective time management, and problem‑solving expertise.
+      </p>
+      <div class="row" style="margin-top:18px">
+        <a class="btn" href="mailto:202krishnapatil@gmail.com">✉️ Email</a>
+        <a class="btn" href="tel:+919580159631">📞 Call</a>
+        <a class="btn" target="_blank" rel="noopener" href="https://www.linkedin.com/in/krishna-chandrakant-patil-3396">in LinkedIn</a>
+      </div>
+      <div class="muted" style="margin-top:10px">📍 Pachora, MH 424201 • 🇮🇳 India</div>
+    </section>
+
+    <aside class="stack">
+      <div class="card grid-2">
+        <div>
+          <div class="muted" style="font-weight:600">Languages</div>
+          <div class="lang">
+            <div>English — Advanced (C1)
+              <div class="meter" aria-label="English level"><i style="width:95%"></i></div>
+            </div>
+            <div>German — Advanced (C1)
+              <div class="meter" aria-label="German level"><i style="width:80%"></i></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="muted" style="font-weight:600">Personal Details</div>
+          <div class="stack">
+            <div class="pd">Date of Birth: 20‑02‑2006</div>
+            <div class="pd">Nationality: Indian</div>
+            <div class="pd">Marital Status: Single</div>
+            <div class="pd">Gender: Male</div>
+            <div class="pd">Religion: Hindu</div>
+          </div>
+        </div>
+      </div>
+      <a class="btn" href="#contact" style="justify-content:center">Get in touch</a>
+    </aside>
+  </main>
+
+  <section id="skills" class="container">
+    <h2 class="section-title">Skills</h2>
+    <div class="skills">
+      <div class="skill">Artificial Intelligence (AI) and Machine Learning:</div>
+      <div class="skill">Cloud Computing: AWS, Azure, Google Cloud</div>
+      <div class="skill">Full-Stack Development:</div>
+      <div class="skill">DevOps:</div>
+      <div class="skill">Blockchain:</div>
+      <div class="skill">UX/UI Design:</div>
+    </div>
+  </section>
+
+  <section id="education" class="container">
+    <h2 class="section-title">Education</h2>
+    <article class="edu-item">
+      <h3 style="margin:0">BCA: Computational Science</h3>
+      <small>G.H Raisoni College of Engineering and Management Jalgaon, India • Expected Mar 2026</small>
+      <ul class="muted" style="margin:6px 0 0 18px">
+        <li>Recipient of Shark Tank — 2nd Prize (2024)</li>
+        <li>Recipient of Shark Tank — 1st Prize (2025)</li>
+      </ul>
+    </article>
+  </section>
+
+  <section id="projects" class="container">
+    <h2 class="section-title">Projects</h2>
+    <div class="projects">
+      <!-- Project 1: Basha Converter -->
+      <article class="project">
+        <div class="cover">
+          <img src="Trans.png" alt="Basha Converter Screenshot">
+        </div>
+        <div class="body">
+          <h4>Basha Converter</h4>
+          <p>Basha Converter is a simple project that converts text and voice between multiple Indian languages, making communication easier across language barriers.</p>
+        </div>
+        <div class="actions">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://kriss2012.github.io/BashaConverter-Krishna/BashaConverter-Krishna.html">View Project</a>
+          <a class="btn" target="_blank" rel="noopener" href="#">Source Code</a>
+        </div>
+      </article>
+
+      <!-- Project 2: Online Book Store -->
+      <article class="project">
+        <div class="cover">
+          <img src="Book.png" alt="Online Book Store Screenshot">
+        </div>
+        <div class="body">
+          <h4>Online Book Store</h4>
+          <p>An online bookstore is a web-based platform where users can browse, search, and purchase books from various categories.</p>
+        </div>
+        <div class="actions">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://kriss2012.github.io/Online-Book-Store/">View Project</a>
+          <a class="btn" target="_blank" rel="noopener" href="#">Source Code</a>
+        </div>
+      </article>
+
+      <!-- Project 3: Fake Review Identification System -->
+      <article class="project">
+        <div class="cover">
+          <img src="Fake.png" alt="Fake Review Identification System Screenshot">
+        </div>
+        <div class="body">
+          <h4>Fake Review Identification System</h4>
+          <p>A Fake Review Identification System detects and flags misleading or false product reviews using AI-powered text and image analysis.</p>
+        </div>
+        <div class="actions">
+          <a class="btn primary" target="_blank" rel="noopener" href="https://fake-review-id-system-2.onrender.com/">View Project</a>
+          <a class="btn" target="_blank" rel="noopener" href="#">Source Code</a>
+        </div>
+      </article>
+    </div>
+  </section>
+  
+  <footer id="contact">
+    <div class="container">
+      <h2 class="section-title">Contact</h2>
+      <div class="row">
+        <span class="chip">✉️ 202krishnapatil@gmail.com</span>
+        <span class="chip">📞 +91 95801 59631</span>
+        <a class="chip" target="_blank" rel="noopener" href="https://www.linkedin.com/in/krishna-chandrakant-patil-3396">in LinkedIn</a>
+      </div>
+      <p class="muted" style="margin-top:16px">© <span id="y"></span> Krishna Patil • Built with HTML/CSS/JS</p>
+    </div>
+  </footer>
+
+  <script>
+    // tiny script: update year + focus ring for keyboard users
+    document.getElementById('y').textContent = new Date().getFullYear();
+    document.addEventListener('keydown', e => { if(e.key==='Tab'){ document.body.style.boxShadow='var(--ring)'; } });
+  </script>
+</body>
+</html>
