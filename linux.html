@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishna Patil - PortfolioOS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #1e40af;
+            --secondary-blue: #3b82f6;
+            --dark-blue: #1e3a8a;
+            --ubuntu-dark: #0f172a;
+            --ubuntu-light: #334155;
+            --terminal-bg: #0f172a;
+            --terminal-text: #f1f5f9;
+            --sidebar-bg: rgba(30, 41, 59, 0.9);
+            --topbar-bg: rgba(30, 41, 59, 0.7);
+            --window-border: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, var(--ubuntu-dark) 0%, var(--dark-blue) 50%, var(--ubuntu-light) 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #desktop { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #desktop.overview-mode { transform: scale(0.85); filter: brightness(0.6); }
+
+        .top-panel {
+            background: var(--topbar-bg);
+            border-bottom: 1px solid #475569;
+            backdrop-filter: blur(10px);
+            height: 28px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .activities-button { padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+        .activities-button:hover { background-color: rgba(255,255,255,0.1); }
+        .activities-button.active { background-color: var(--primary-blue); color: white; }
+
+        .clock-date { font-weight: 500; text-align: center; color: var(--text-secondary); }
+        .system-indicators { display: flex; align-items: center; gap: 8px; }
+        .indicator { padding: 2px 6px; border-radius: 3px; font-size: 12px; cursor: pointer; transition: background-color 0.2s; }
+        .indicator:hover { background-color: rgba(255,255,255,0.1); }
+
+        .sidebar {
+            position: fixed;
+            left: 0; top: 28px; bottom: 0;
+            width: 64px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #475569;
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+        }
+
+        .dock-item {
+            width: 48px; height: 48px;
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+        }
+
+        .dock-item:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); border-color: rgba(255,255,255,0.2); }
+        .dock-item.running::after { content: ''; position: absolute; left: 4px; bottom: 4px; width: 6px; height: 6px; background: var(--secondary-blue); border-radius: 50%; }
+
+        .window {
+            position: absolute;
+            background: #1e293b;
+            border: 1px solid var(--window-border);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            min-width: 320px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            resize: both;
+            overflow: hidden;
+            transition: all 0.2s ease, opacity 0.2s, transform 0.2s;
+        }
+
+        .window.maximized { top: 28px !important; left: 64px !important; width: calc(100vw - 64px) !important; height: calc(100vh - 28px) !important; border-radius: 0; resize: none; }
+        .window.minimized { opacity: 0; transform: scale(0.8) translateY(50px); pointer-events: none; }
+        .window.focused { z-index: 100; border-color: var(--secondary-blue); }
+
+        .window-header {
+            height: 36px;
+            background: linear-gradient(to bottom, #374151, #1f2937);
+            border-bottom: 1px solid #475569;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 12px; cursor: move;
+        }
+
+        .window-title { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 14px; }
+        .window-controls { display: flex; gap: 8px; }
+        .window-control { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; }
+        .window-control.close { background: #ef4444; }
+        .window-control.minimize { background: #f59e0b; }
+        .window-control.maximize { background: #10b981; }
+
+        .window-content { flex: 1; overflow: auto; background: #334155; }
+        .terminal { background: var(--terminal-bg); color: var(--terminal-text); font-family: 'Ubuntu Mono', monospace; padding: 12px; height: 100%; overflow-y: auto; font-size: 14px; line-height: 1.4; }
+        .file-manager { background: #f8fafc; color: #1e293b; display: flex; height: 100%; }
+        .file-sidebar { width: 180px; background: #f1f5f9; border-right: 1px solid #cbd5e1; padding: 8px; }
+        .file-toolbar { background: #e2e8f0; border-bottom: 1px solid #cbd5e1; padding: 8px 12px; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .desktop-icons { position: absolute; top: 40px; left: 80px; display: grid; grid-template-columns: repeat(auto-fill, 80px); grid-template-rows: repeat(auto-fill, 100px); gap: 16px; padding: 16px; align-content: start; }
+        .desktop-icon { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 8px; border-radius: 8px; transition: background-color 0.2s; }
+        .desktop-icon:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .desktop-icon .icon { font-size: 48px; margin-bottom: 4px; }
+        .desktop-icon .label { font-size: 12px; text-align: center; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); }
+        
+        .login-screen, .boot-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9998; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        .login-screen { background: linear-gradient(135deg, var(--ubuntu-dark) 0%, var(--dark-blue) 100%); }
+        .boot-screen { background: var(--terminal-bg); font-family: 'Ubuntu Mono', monospace; flex-direction: column; }
+        .hidden { display: none !important; }
+
+        .projects-container { height: 100%; overflow-y: auto; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 32px; color: #1e293b;}
+        .project-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; transition: transform 0.2s, box-shadow 0.2s; }
+        .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .project-header h3 { color: #1e40af; margin: 0; font-size: 1.3rem; }
+        .project-header .status { color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .project-header .status.live { background: #10b981; }
+        .project-header .status.dev { background: #f59e0b; }
+        .tech-tags { margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tech-tags span { background: #f1f5f9; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #e2e8f0; }
+        .project-links { display: flex; gap: 12px; }
+        .project-links button { flex: 1; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .project-links button:first-child { background: #1e40af; color: white; }
+        .project-links button:last-child { background: #1f2937; color: white; }
+
+        .settings-panel, .about-panel { background: #f8fafc; color: #1e293b; padding: 24px; height: 100%; overflow-y: auto; }
+        .wallpaper-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; }
+        .wallpaper-option { width: 100%; height: 80px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
+        .wallpaper-option:hover { border-color: var(--primary-blue); }
+
+        .calculator { height: 100%; display: flex; flex-direction: column; background: #2d3748; }
+        .calc-display { flex: 1; color: white; text-align: right; padding: 20px; font-size: 2.5rem; font-family: 'Ubuntu Mono', monospace; }
+        .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; }
+        .calc-keys button { background: #4a5568; border: none; padding: 20px; font-size: 1.2rem; color: white; cursor: pointer; transition: background-color .2s; }
+        .calc-keys button:hover { background: #718096; }
+        .calc-keys button:last-child { background: var(--secondary-blue); }
+    </style>
+</head>
+<body>
+    <div id="login-screen" class="login-screen">
+        <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 40px; border-radius: 12px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-blue); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white;">👨‍💻</div>
+            <h2 style="margin: 0 0 10px 0; font-weight: 300;">Krishna Patil</h2>
+            <p style="margin: 0 0 20px 0; color: #ccc;">Welcome to PortfolioOS</p>
+            <button id="login-btn" style="background: var(--primary-blue); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500;">Sign In</button>
+        </div>
+    </div>
+
+    <div id="boot-screen" class="boot-screen hidden">
+        <div style="font-size: 48px; margin-bottom: 20px;">🐧</div>
+        <div style="width: 24px; height: 24px; border: 2px solid transparent; border-top: 2px solid var(--primary-blue); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
+        <div id="boot-text" style="font-size: 14px; text-align: left; max-width: 80%; line-height: 1.2; white-space: pre-line;"></div>
+    </div>
+
+    <div id="desktop" style="opacity: 0;">
+        <div class="top-panel">
+             <div class="activities-button" id="activities-btn">Activities</div>
+             <div class="clock-date" id="clock-date"></div>
+             <div class="system-indicators">
+                <div class="indicator" onclick="showNotification('📶 WiFi Connected', 'info')">📶</div>
+                <div class="indicator" onclick="showNotification('🔋 Battery: 92% (Charging)', 'info')">🔋</div>
+                <div class="indicator" onclick="showNotification('🔊 Volume: 75%', 'info')">🔊</div>
+                <div class="indicator" onclick="openApp('settings')">⚙️</div>
+            </div>
+        </div>
+
+        <div class="sidebar" id="sidebar">
+            <div class="dock-item" onclick="openApp('files')" data-app="files" title="Files">📁</div>
+            <div class="dock-item" onclick="openApp('terminal')" data-app="terminal" title="Terminal">📟</div>
+            <div class="dock-item" onclick="openApp('browser')" data-app="browser" title="Web Browser">🌐</div>
+            <div class="dock-item" onclick="openApp('code')" data-app="code" title="Text Editor">📝</div>
+            <div class="dock-item" onclick="openApp('projects')" data-app="projects" title="Projects">💼</div>
+            <div class="dock-item" onclick="openApp('calculator')" data-app="calculator" title="Calculator">🧮</div>
+        </div>
+
+        <div class="desktop-icons">
+            <div class="desktop-icon" ondblclick="openApp('files', 'projects')">
+                <div class="icon">💼</div>
+                <div class="label">Projects</div>
+            </div>
+             <div class="desktop-icon" ondblclick="openApp('files', 'documents')">
+                <div class="icon">📄</div>
+                <div class="label">Documents</div>
+            </div>
+            <div class="desktop-icon" ondblclick="openApp('about')">
+                <div class="icon">ℹ️</div>
+                <div class="label">About</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="context-menu" class="context-menu">
+        <div class="context-menu-item" onclick="openApp('settings')"><span>🖼️</span> Change Background</div>
+        <div class="context-menu-item" onclick="openApp('terminal')"><span>📟</span> Open Terminal</div>
+    </div>
+
+    <div id="activities-overview" class="activities-overview">
+        <div id="workspace-preview" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; height: 100%;"></div>
+    </div>
+
+    <script>
+        // Paste the entire JavaScript code block from the previous response here.
+        // It's too long to repeat, but the logic remains the same.
+        // Just ensure the functions and classes are defined before the DOMContentLoaded listener.
+        // Enhanced Virtual File System with GitHub Projects
+const VFS = {
+    '/': {
+        type: 'directory',
+        children: {
+            'home': {
+                type: 'directory',
+                children: {
+                    'krishna': {
+                        type: 'directory',
+                        children: {
+                            'Desktop': {
+                                type: 'directory',
+                                children: {
+                                    'README.txt': {
+                                        type: 'file',
+                                        content: `Welcome to Krishna Patil's PortfolioOS Desktop!
+
+This is a Linux-style portfolio showcasing my projects and skills.
+
+Quick Navigation:
+- Double-click folders to explore
+- Use the sidebar to launch applications  
+- Right-click for context menu
+- Check out Projects folder for my work
+
+Contact: 202krishnapatil@gmail.com
+GitHub: github.com/kriss2012
+
+Enjoy exploring!`
+                                    }
+                                }
+                            },
+                            'Documents': {
+                                type: 'directory',
+                                children: {
+                                    'Resume.txt': {
+                                        type: 'file',
+                                        content: `KRISHNA PATIL - SOFTWARE DEVELOPER
+
+Education: BCA 3rd Year, G.H Raisoni College
+Expected Graduation: March 2026
+
+Skills:
+- Python (Advanced)
+- JavaScript (Intermediate)  
+- HTML/CSS (Advanced)
+- Flask, React, Node.js
+- Machine Learning
+- Google Cloud APIs
+
+Major Projects:
+1. BhashaConverter - Language Translation App
+2. Fake Review Detection System
+3. Online Book Store
+4. Adventure Game Development
+
+Contact: 202krishnapatil@gmail.com
+LinkedIn: krishna-chandrakant-patil-3396
+GitHub: github.com/kriss2012`
+                                    },
+                                    'Cover_Letter.txt': {
+                                        type: 'file',
+                                        content: `Dear Hiring Manager,
+
+I am Krishna Patil, a passionate BCA student specializing in full-stack development and machine learning. 
+
+My experience includes building production-ready applications:
+- BhashaConverter: Multi-language translation with speech recognition
+- AI-powered fake review detection system  
+- Complete e-commerce platforms
+
+I am excited about opportunities to contribute my technical skills and creativity to your team.
+
+Best regards,
+Krishna Patil
+202krishnapatil@gmail.com`
+                                    }
+                                }
+                            },
+                            'Projects': {
+                                type: 'directory',
+                                children: {
+                                    'BhashaConverter': {
+                                        type: 'directory',
+                                        children: {
+                                            'README.md': {
+                                                type: 'file',
+                                                content: `# BhashaConverter - Language Translation App
+
+## Overview
+Comprehensive language translation application with speech recognition capabilities.
+
+## Features
+- Text translation between multiple languages
+- Speech-to-text conversion
+- Document translation (PDF, DOCX, HTML)
+- Modern React frontend
+- Flask backend with Google APIs
+
+## Technologies
+- Python, Flask
+- React, JavaScript
+- Google Cloud Translation API
+- Google Speech-to-Text API
+
+## Links
+Live Demo: https://kriss2012.github.io/BashaConverter-Krishna/BashaConverter-Krishna.html
+GitHub: https://github.com/kriss2012/BashaConverter-Krishna
+
+## Status: ✅ Deployed and Live`
+                                            },
+                                            'features.txt': {
+                                                type: 'file',
+                                                content: `BhashaConverter Key Features:
+
+1. Multi-Language Support
+   - 100+ language pairs
+   - Real-time translation
+   - Language auto-detection
+
+2. Speech Recognition
+   - Voice input processing
+   - Real-time transcription
+   - Multiple language support
+
+3. Document Translation
+   - PDF file processing
+   - DOCX document handling
+   - HTML file translation
+
+4. Modern Interface
+   - Responsive design
+   - Dark theme support
+   - Mobile-friendly
+
+5. API Integration
+   - Google Cloud APIs
+   - Secure authentication
+   - Rate limiting`
+                                            }
+                                        }
+                                    },
+                                    'FakeReviewDetection': {
+                                        type: 'directory',
+                                        children: {
+                                            'README.md': {
+                                                type: 'file',
+                                                content: `# Fake Review Detection System
+
+## Overview
+AI-powered system to detect fraudulent product reviews using machine learning.
+
+## Features
+- Text analysis with NLTK
+- Screenshot processing
+- Machine learning classification
+- 87% accuracy rate
+
+## Technologies
+- Python, Flask
+- NLTK, scikit-learn
+- Machine Learning algorithms
+- Image processing
+
+## Performance
+- Accuracy: 87%
+- Precision: 89%
+- Recall: 84%
+- F1-Score: 86%
+
+## Links
+Live Demo: https://fake-review-id-system-2.onrender.com/
+Status: ✅ Deployed and Live`
+                                            },
+                                            'model_info.txt': {
+                                                type: 'file',
+                                                content: `Fake Review Detection - Model Details
+
+Machine Learning Pipeline:
+1. Data Preprocessing
+   - Text cleaning and normalization
+   - Feature extraction using TF-IDF
+   - Label encoding for classification
+
+2. Model Training
+   - Random Forest Classifier
+   - Support Vector Machine
+   - Cross-validation testing
+
+3. Features Used
+   - Text sentiment analysis
+   - Review length patterns
+   - Language complexity metrics
+   - Reviewer behavior patterns
+
+4. Performance Metrics
+   - Training accuracy: 91%
+   - Test accuracy: 87%
+   - False positive rate: 11%
+   - Processing time: <2 seconds per review
+
+Dataset: 1000+ labeled reviews (fake/genuine)`
+                                            }
+                                        }
+                                    },
+                                    'OnlineBookStore': {
+                                        type: 'directory',
+                                        children: {
+                                            'README.md': {
+                                                type: 'file',
+                                                content: `# Online Book Store
+
+## Overview
+Complete e-commerce platform for browsing and purchasing books online.
+
+## Features
+- Book catalog with search
+- User authentication
+- Shopping cart system
+- Responsive design
+- Payment integration ready
+
+## Technologies
+- HTML5, CSS3
+- JavaScript (ES6+)
+- Responsive Grid/Flexbox
+- LocalStorage for cart
+- Modern web APIs
+
+## Highlights
+- Mobile-first design
+- Fast performance
+- SEO optimized
+- Accessible interface
+
+## Links
+Live Demo: https://kriss2012.github.io/Online-Book-Store/
+Status: ✅ Deployed and Live`
+                                            },
+                                            'features.txt': {
+                                                type: 'file',
+                                                content: `Online Book Store Features:
+
+Frontend Features:
+- Modern responsive design
+- Book catalog with filtering
+- Advanced search functionality
+- User-friendly shopping cart
+- Wishlist management
+- Book recommendations
+
+Technical Features:
+- Pure JavaScript (no frameworks)
+- CSS Grid and Flexbox layout
+- LocalStorage for data persistence
+- Optimized image loading
+- Cross-browser compatibility
+
+User Experience:
+- Fast loading times
+- Intuitive navigation
+- Mobile-optimized interface
+- Smooth animations
+- Accessible design
+
+Future Enhancements:
+- Backend API integration
+- Real payment processing
+- User reviews system
+- Inventory management
+- Admin dashboard`
+                                            }
+                                        }
+                                    },
+                                    'AdventureGame': {
+                                        type: 'directory',
+                                        children: {
+                                            'README.md': {
+                                                type: 'file',
+                                                content: `# Adventure Game - Uncharted Style
+
+## Overview
+Interactive web-based adventure game with puzzle mechanics and immersive storytelling.
+
+## Features
+- 20 chapter storyline
+- Puzzle mechanics
+- Dialogue system
+- Inventory management
+- Save/Load functionality
+- Multiple endings
+
+## Technologies
+- JavaScript (ES6+)
+- HTML5 Canvas
+- CSS3 animations
+- Web Storage API
+
+## Game Elements
+- Logic puzzles
+- Environmental challenges
+- Character interactions
+- Story progression
+- Achievement system
+
+## Status: 🚧 In Development
+Working on mobile optimization and additional chapters.`
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+// Wallpapers for Settings
+const Wallpapers = [
+    'linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #334155 100%)',
+    'linear-gradient(135deg, #1e293b 0%, #3730a3 50%, #1e40af 100%)',
+    'linear-gradient(135deg, #111827 0%, #1f2937 50%, #374151 100%)',
+    'linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%)'
+];
+
+// Application Manager
+class AppManager {
+    constructor() {
+        this.windows = new Map();
+        this.zIndex = 100;
+        this.activeWindow = null;
+    }
+
+    openApp(appType, param = null) {
+        const windowId = `${appType}_${Date.now()}`;
+        
+        // Allow multiple browser and code windows
+        if (this.windows.has(appType) && !['browser', 'code'].includes(appType)) {
+            const existingWindow = this.windows.get(appType);
+            this.focusWindow(existingWindow.element);
+            if (existingWindow.element.classList.contains('minimized')) {
+                existingWindow.element.classList.remove('minimized');
+            }
+            return;
+        }
+
+        const window = this.createWindow(windowId, appType, param);
+        
+        const windowKey = (['browser', 'code'].includes(appType)) ? windowId : appType;
+        this.windows.set(windowKey, window);
+        this.updateDockIndicator(appType, true);
+        this.focusWindow(window.element);
+    }
+
+    createWindow(windowId, appType, param) {
+        const windowEl = document.createElement('div');
+        windowEl.className = 'window';
+        windowEl.setAttribute('data-window-id', windowId);
+        windowEl.setAttribute('data-app-type', appType);
+
+        const x = 100 + (this.windows.size * 30);
+        const y = 60 + (this.windows.size * 30);
+        windowEl.style.left = `${x}px`;
+        windowEl.style.top = `${y}px`;
+        
+        if (appType === 'terminal') {
+            windowEl.style.width = '800px';
+            windowEl.style.height = '500px';
+        } else if (appType === 'projects' || appType === 'portfolio') { // Treat portfolio as projects
+            windowEl.style.width = '900px';
+            windowEl.style.height = '650px';
+        } else if (appType === 'browser') {
+            windowEl.style.width = '1000px';
+            windowEl.style.height = '700px';
+        } else {
+            windowEl.style.width = '750px';
+            windowEl.style.height = '550px';
+        }
+        
+        windowEl.style.zIndex = ++this.zIndex;
+
+        const appConfig = this.getAppConfig(appType, param);
+        windowEl.innerHTML = `
+            <div class="window-header">
+                <div class="window-title">
+                    <span>${appConfig.icon}</span>
+                    <span>${appConfig.title}</span>
+                </div>
+                <div class="window-controls">
+                    <div class="window-control minimize" onclick="appManager.minimizeWindow('${windowId}')"></div>
+                    <div class="window-control maximize" onclick="appManager.toggleMaximize('${windowId}')"></div>
+                    <div class="window-control close" onclick="appManager.closeWindow('${windowId}', '${appType}')"></div>
+                </div>
+            </div>
+            <div class="window-content" id="content-${windowId}">
+                ${appConfig.content}
+            </div>
+        `;
+
+        document.getElementById('desktop').appendChild(windowEl);
+        this.initializeApp(windowId, appType, param);
+        this.makeDraggable(windowEl);
+
+        windowEl.addEventListener('mousedown', () => {
+            this.focusWindow(windowEl);
+        });
+
+        return {
+            element: windowEl,
+            id: windowId,
+            appType: appType
+        };
+    }
+
+    getAppConfig(appType, param) {
+        const configs = {
+            terminal: {
+                icon: '📟',
+                title: 'Terminal - krishna@portfolioos',
+                content: '<div class="terminal" id="terminal-content"></div>'
+            },
+            files: {
+                icon: '📁',
+                title: 'Files',
+                content: `
+                    <div class="file-manager">
+                        <div class="file-sidebar" id="file-sidebar"></div>
+                        <div style="flex: 1;">
+                            <div class="file-toolbar">
+                                <button class="toolbar-button" onclick="fileManager.goBack()">← Back</button>
+                                <button class="toolbar-button" onclick="fileManager.goForward()">→ Forward</button>
+                                <button class="toolbar-button" onclick="fileManager.goUp()">↑ Up</button>
+                                <div class="breadcrumb" id="breadcrumb"></div>
+                            </div>
+                            <div class="file-content" id="file-content"></div>
+                        </div>
+                    </div>
+                `
+            },
+            code: {
+                icon: '📝',
+                title: 'Text Editor',
+                content: `
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+                        <div style="background: #e2e8f0; padding: 8px 12px; border-bottom: 1px solid #cbd5e1; font-size: 13px; color: #1e293b;">
+                            <span id="editor-filename">New Document</span>
+                        </div>
+                        <textarea style="flex: 1; border: none; outline: none; padding: 12px; font-family: 'Ubuntu Mono', monospace; font-size: 14px; background: white; color: #1e293b; resize: none;" placeholder="Start typing..."></textarea>
+                    </div>
+                `
+            },
+            browser: {
+                icon: '🌐',
+                title: 'Web Browser',
+                content: `
+                    <div style="display: flex; flex-direction: column; height: 100%;">
+                        <div class="browser-toolbar" style="background: #e2e8f0; padding: 8px 12px; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; gap: 8px;">
+                            <button class="toolbar-button" id="back-btn">←</button>
+                            <button class="toolbar-button" id="forward-btn">→</button>
+                            <button class="toolbar-button" id="refresh-btn">🔄</button>
+                            <input type="text" id="address-bar" style="flex: 1; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px;" placeholder="Search or enter web address">
+                        </div>
+                        <iframe id="browser-frame" style="flex: 1; border: none; display: none;"></iframe>
+                        <div id="home-page" style="flex: 1; background: white; display: flex; align-items: center; justify-content: center; color: #64748b; padding: 40px;">
+                           <div style="text-align: center; max-width: 600px;">
+                                <div style="font-size: 64px; margin-bottom: 24px;">🌐</div>
+                                <h2 style="color: #1e293b; margin-bottom: 16px;">Portfolio Web Browser</h2>
+                                <p style="margin-bottom: 32px; line-height: 1.6;">Browse external websites by clicking on links from projects or entering URLs above.</p>
+                                <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+                                    <h4 style="color: #1e40af; margin-bottom: 12px;">Quick Links:</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <button onclick="openExternal('https://github.com/kriss2012')" style="text-align: left; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">🐱 GitHub Profile</button>
+                                        <button onclick="openExternal('https://kriss2012.github.io/BashaConverter-Krishna/BashaConverter-Krishna.html')" style="text-align: left; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">🔄 BhashaConverter</button>
+                                        <button onclick="openExternal('https://fake-review-id-system-2.onrender.com/')" style="text-align: left; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">🔍 Fake Review Detection</button>
+                                        <button onclick="openExternal('https://kriss2012.github.io/Online-Book-Store/')" style="text-align: left; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer;">📚 Online Book Store</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            projects: {
+                icon: '💼',
+                title: 'My Projects',
+                content: `
+                    <div style="height: 100%; overflow-y: auto; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);">
+                        <div style="padding: 32px; color: #1e293b;">
+                            <div style="text-align: center; margin-bottom: 40px;">
+                                <h1 style="margin: 0 0 8px 0; color: #1e40af; font-size: 2.5rem;">My Projects</h1>
+                                <p style="margin: 0; color: #64748b; font-size: 1.1rem;">Showcasing my development work and technical skills</p>
+                            </div>
+                            
+                            <div id="projects-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px;">
+                                </div>
+                        </div>
+                    </div>
+                `
+            },
+            settings: {
+                icon: '⚙️',
+                title: 'Settings',
+                content: `
+                    <div class="settings-panel">
+                        <h2 style="color: #1e40af; margin-bottom: 24px;">System Settings</h2>
+                        
+                        <div style="margin-bottom: 32px;">
+                            <h3 style="color: #1e293b; margin-bottom: 16px;">Appearance</h3>
+                            <h4 style="color: #64748b; margin-bottom: 12px;">Background Wallpaper</h4>
+                            <div class="wallpaper-grid" id="wallpaper-options">
+                                </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 32px;">
+                            <h3 style="color: #1e293b; margin-bottom: 16px;">System Information</h3>
+                            <div style="background: #f1f5f9; padding: 16px; border-radius: 8px; font-family: 'Ubuntu Mono', monospace; font-size: 13px; line-height: 1.6;">
+                                <strong>OS:</strong> PortfolioOS 22.04.3 LTS<br>
+                                <strong>Desktop:</strong> PortfolioDE<br>
+                                <strong>Theme:</strong> Krishna-Dark-Blue<br>
+                                <strong>Developer:</strong> Krishna Patil<br>
+                                <strong>Version:</strong> 2.0.1<br>
+                                <strong>Build Date:</strong> ${new Date().toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+        // Use 'projects' config for 'portfolio' app type for backward compatibility
+        configs.portfolio = configs.projects;
+        return configs[appType] || configs.terminal;
+    }
+
+    initializeApp(windowId, appType, param) {
+        if (appType === 'terminal') {
+            setTimeout(() => new Terminal(windowId), 100);
+        } else if (appType === 'files') {
+            setTimeout(() => {
+                fileManager = new FileManager(windowId, param);
+            }, 100);
+        } else if (appType === 'projects' || appType === 'portfolio') {
+            setTimeout(() => this.loadProjects(windowId), 100);
+        } else if (appType === 'settings') {
+            setTimeout(() => this.loadSettings(windowId), 100);
+        } else if (appType === 'code') {
+            setTimeout(() => this.loadTextEditorContent(windowId, param), 100);
+        } else if (appType === 'browser') {
+            setTimeout(() => {
+                browserManager = new BrowserManager(windowId);
+            }, 100);
+        }
+    }
+    
+    loadTextEditorContent(windowId, param) {
+        const windowEl = document.querySelector(`[data-window-id="${windowId}"]`);
+        if (!windowEl) return;
+        
+        const textarea = windowEl.querySelector('textarea');
+        const filenameSpan = windowEl.querySelector('#editor-filename');
+        
+        if (param && VFS.home.krishna.Documents[param]) {
+            const file = VFS.home.krishna.Documents[param];
+            if (file && textarea && filenameSpan) {
+                textarea.value = file.content;
+                filenameSpan.textContent = param;
+                textarea.placeholder = '';
+            }
+        } else {
+            textarea.value = '';
+            filenameSpan.textContent = 'Untitled Document'
+            textarea.placeholder = 'Start typing...';
+            textarea.removeAttribute('readonly');
+        }
+    }
+
+    loadProjects(windowId) {
+        const grid = document.querySelector(`[data-window-id="${windowId}"] #projects-grid`);
+        const projects = [
+            {
+                name: 'BhashaConverter',
+                description: 'Comprehensive language translation application with speech recognition, supporting multiple file formats and Google Cloud APIs integration.',
+                tech: ['Python', 'Flask', 'React', 'Google APIs'],
+                status: '✅ Live',
+                url: 'https://kriss2012.github.io/BashaConverter-Krishna/BashaConverter-Krishna.html',
+                github: 'https://github.com/kriss2012/BashaConverter-Krishna'
+            },
+            {
+                name: 'Fake Review Detection',
+                description: 'AI-powered system using machine learning algorithms to detect fraudulent product reviews with 87% accuracy rate.',
+                tech: ['Python', 'NLTK', 'scikit-learn', 'Flask'],
+                status: '✅ Live',
+                url: 'https://fake-review-id-system-2.onrender.com/',
+                github: '#'
+            },
+            {
+                name: 'Online Book Store',
+                description: 'Complete e-commerce platform with modern web technologies, featuring book catalog, search, and shopping cart functionality.',
+                tech: ['HTML5', 'CSS3', 'JavaScript', 'Responsive Design'],
+                status: '✅ Live',
+                url: 'https://kriss2012.github.io/Online-Book-Store/',
+                github: 'https://github.com/kriss2012/Online-Book-Store'
+            },
+            {
+                name: 'Adventure Game',
+                description: 'Interactive web-based adventure game with puzzle mechanics, dialogue system, and immersive storytelling across 20 chapters.',
+                tech: ['JavaScript', 'HTML5 Canvas', 'CSS3', 'Web Storage'],
+                status: '🚧 Development',
+                url: '#',
+                github: '#'
+            }
+        ];
+
+        projects.forEach(project => {
+            const projectCard = document.createElement('div');
+            projectCard.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                border: 1px solid #e2e8f0;
+                transition: transform 0.2s, box-shadow 0.2s;
+            `;
+            
+            projectCard.onmouseover = () => {
+                projectCard.style.transform = 'translateY(-4px)';
+                projectCard.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+            };
+            
+            projectCard.onmouseout = () => {
+                projectCard.style.transform = 'translateY(0)';
+                projectCard.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            };
+
+            projectCard.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <h3 style="color: #1e40af; margin: 0; font-size: 1.3rem;">${project.name}</h3>
+                    <span style="background: ${project.status.includes('Live') ? '#10b981' : '#f59e0b'}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">${project.status}</span>
+                </div>
+                <p style="color: #64748b; line-height: 1.6; margin-bottom: 16px;">${project.description}</p>
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        ${project.tech.map(tech => `<span style="background: #f1f5f9; color: #1e40af; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #e2e8f0;">${tech}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    ${project.url !== '#' ? `<button onclick="openExternal('${project.url}')" style="flex: 1; background: #1e40af; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 500;">🌐 View Live</button>` : ''}
+                    ${project.github !== '#' ? `<button onclick="openExternal('${project.github}')" style="flex: 1; background: #1f2937; color: white; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 500;">🐱 GitHub</button>` : ''}
+                </div>
+            `;
+            
+            grid.appendChild(projectCard);
+        });
+    }
+
+    loadSettings(windowId) {
+        const container = document.querySelector(`[data-window-id="${windowId}"] #wallpaper-options`);
+        
+        Wallpapers.forEach((wallpaper, index) => {
+            const option = document.createElement('div');
+            option.className = 'wallpaper-option';
+            option.style.background = wallpaper;
+            option.onclick = () => {
+                document.body.style.background = wallpaper;
+                showNotification(`Wallpaper changed to style ${index + 1}`, 'success');
+            };
+            container.appendChild(option);
+        });
+    }
+
+    focusWindow(windowEl) {
+        document.querySelectorAll('.window').forEach(w => w.classList.remove('focused'));
+        windowEl.classList.add('focused');
+        windowEl.style.zIndex = ++this.zIndex;
+        this.activeWindow = windowEl;
+    }
+
+    minimizeWindow(windowId) {
+        const windowEl = document.querySelector(`[data-window-id="${windowId}"]`);
+        if (windowEl) windowEl.classList.add('minimized');
+    }
+
+    toggleMaximize(windowId) {
+        const windowEl = document.querySelector(`[data-window-id="${windowId}"]`);
+        if (windowEl) windowEl.classList.toggle('maximized');
+    }
+
+    closeWindow(windowId, appType) {
+        const windowEl = document.querySelector(`[data-window-id="${windowId}"]`);
+        if (windowEl) {
+            windowEl.remove();
+            
+            let keyToRemove = null;
+            for (let [key, window] of this.windows) {
+                if (window.id === windowId) {
+                    keyToRemove = key;
+                    break;
+                }
+            }
+            if (keyToRemove) this.windows.delete(keyToRemove);
+            
+            const hasTypeRemaining = Array.from(this.windows.values()).some(w => w.appType === appType);
+            if (!hasTypeRemaining) this.updateDockIndicator(appType, false);
+        }
+    }
+
+    updateDockIndicator(appType, isRunning) {
+        const dockItem = document.querySelector(`[data-app="${appType}"]`);
+        if (dockItem) {
+            if (isRunning) {
+                dockItem.classList.add('running');
+            } else {
+                dockItem.classList.remove('running');
+            }
+        }
+    }
+
+    makeDraggable(windowEl) {
+        const header = windowEl.querySelector('.window-header');
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+
+        header.addEventListener('mousedown', (e) => {
+            if (windowEl.classList.contains('maximized')) return;
+            
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(windowEl.style.left);
+            startTop = parseInt(windowEl.style.top);
+
+            const handleDrag = (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                windowEl.style.left = `${startLeft + deltaX}px`;
+                windowEl.style.top = `${startTop + deltaY}px`;
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+                document.removeEventListener('mousemove', handleDrag);
+                document.removeEventListener('mouseup', stopDrag);
+            };
+
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDrag);
+        });
+    }
+}
+
+// All other classes and functions from hh.js (Terminal, FileManager, BrowserManager, etc.) would follow here...
+// NOTE: I am including the complete merged set below.
+
+class BrowserManager {
+    constructor(windowId) {
+        this.windowId = windowId;
+        this.iframe = document.querySelector(`[data-window-id="${this.windowId}"] #browser-frame`);
+        this.homePage = document.querySelector(`[data-window-id="${this.windowId}"] #home-page`);
+        this.addressBar = document.querySelector(`[data-window-id="${this.windowId}"] #address-bar`);
+        this.backBtn = document.querySelector(`[data-window-id="${this.windowId}"] #back-btn`);
+        this.forwardBtn = document.querySelector(`[data-window-id="${this.windowId}"] #forward-btn`);
+        this.refreshBtn = document.querySelector(`[data-window-id="${this.windowId}"] #refresh-btn`);
+        
+        this.history = ['about:home'];
+        this.historyIndex = 0;
+        
+        this.initialize();
+    }
+
+    initialize() {
+        this.setupEventListeners();
+        this.navigateTo('about:home', true);
+    }
+
+    setupEventListeners() {
+        this.addressBar.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.navigateTo(this.addressBar.value);
+        });
+        this.backBtn.addEventListener('click', () => this.goBack());
+        this.forwardBtn.addEventListener('click', () => this.goForward());
+        this.refreshBtn.addEventListener('click', () => this.refresh());
+    }
+
+    navigateTo(url, isInitial = false) {
+        if (url.trim() === 'about:home' || url.trim() === '') {
+            this.iframe.style.display = 'none';
+            this.homePage.style.display = 'flex';
+            this.addressBar.value = 'about:home';
+        } else {
+            let properUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                properUrl = 'https://' + url;
+            }
+            this.iframe.src = properUrl;
+            this.iframe.style.display = 'block';
+            this.homePage.style.display = 'none';
+            this.addressBar.value = properUrl;
+        }
+
+        if (!isInitial) {
+            if (this.historyIndex < this.history.length - 1) {
+                this.history = this.history.slice(0, this.historyIndex + 1);
+            }
+            this.history.push(this.addressBar.value);
+            this.historyIndex = this.history.length - 1;
+        }
+        this.updateNavButtons();
+    }
+    
+    goBack() {
+        if (this.historyIndex > 0) {
+            this.historyIndex--;
+            this.navigateTo(this.history[this.historyIndex], true);
+        }
+    }
+
+    goForward() {
+        if (this.historyIndex < this.history.length - 1) {
+            this.historyIndex++;
+            this.navigateTo(this.history[this.historyIndex], true);
+        }
+    }
+
+    refresh() {
+        if (this.history[this.historyIndex] !== 'about:home') {
+            this.iframe.src = this.iframe.src;
+        }
+    }
+
+    updateNavButtons() {
+        this.backBtn.disabled = this.historyIndex <= 0;
+        this.forwardBtn.disabled = this.historyIndex >= this.history.length - 1;
+    }
+}
+
+
+class Terminal {
+    constructor(windowId) {
+        this.containerId = `content-${windowId}`;
+        this.container = document.getElementById(this.containerId).querySelector('.terminal');
+        this.currentPath = '/home/krishna';
+        this.commandHistory = [];
+        this.historyIndex = -1;
+        this.initialize();
+    }
+
+    initialize() {
+        this.container.innerHTML = '';
+        this.printWelcome();
+        this.createInputLine();
+    }
+
+    printWelcome() {
+        const welcome = `Welcome to PortfolioOS Terminal
+
+<span style="color: #4E9A06;">krishna@portfolioos</span>:<span style="color: var(--accent-blue);">/home/krishna</span>$ <span style="color: #AD7FA8;">neofetch</span>
+
+<span style="color: var(--ubuntu-blue);">                          .oOOOo.    </span>  <span style="color: #4E9A06;">krishna@portfolioos</span>
+<span style="color: var(--ubuntu-blue);">                       .oOOOOOOOOOo.  </span>  --------------------
+<span style="color: var(--ubuntu-blue);">                     oOOOOOOOOOOOOOOo </span>  <span style="color: var(--accent-blue);">OS:</span> PortfolioOS 20.04.6 LTS
+<span style="color: var(--ubuntu-blue);">                   .oOOOOOOOOOOOOOOOo.</span>  <span style="color: var(--accent-blue);">Host:</span> Portfolio Browser
+<span style="color: var(--ubuntu-blue);">                  oOOOOOOOOOOOOOOOOOOo </span>  <span style="color: var(--accent-blue);">Kernel:</span> 5.15.0-portfolio
+<span style="color: var(--ubuntu-blue);">                .oOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">Uptime:</span> Always online
+<span style="color: var(--ubuntu-blue);">               oOOOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">Shell:</span> bash 5.1.16
+<span style="color: var(--ubuntu-blue);">              .oOOOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">Resolution:</span> ${window.innerWidth}x${window.innerHeight}
+<span style="color: var(--ubuntu-blue);">              oOOOOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">DE:</span> PortfolioDE
+<span style="color: var(--ubuntu-blue);">              'oOOOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">Theme:</span> Portfolio-Dark-Blue
+<span style="color: var(--ubuntu-blue);">               'oOOOOOOOOOOOOOOOOOOOo</span>  <span style="color: var(--accent-blue);">CPU:</span> JavaScript Engine
+<span style="color: var(--ubuntu-blue);">                'oOOOOOOOOOOOOOOOOOOo</span>   <span style="color: var(--accent-blue);">Memory:</span> Unlimited potential
+<span style="color: var(--ubuntu-blue);">                 'oOOOOOOOOOOOOOOOo'</span>   <span style="color: var(--accent-blue);">Developer:</span> Krishna Patil
+<span style="color: var(--ubuntu-blue);">                   'oOOOOOOOOOOOo'</span>     <span style="color: var(--accent-blue);">Projects:</span> 4+ GitHub Repositories
+<span style="color: var(--ubuntu-blue);">                     'oOOOOOOo'</span>       <span style="color: var(--accent-blue);">Contact:</span> 202krishnapatil@gmail.com
+
+Type <span style="color: #AD7FA8;">'help'</span> for available commands.`;
+        this.print(welcome);
+    }
+    
+    print(text) {
+        const div = document.createElement('div');
+        div.innerHTML = text;
+        this.container.appendChild(div);
+        this.container.scrollTop = this.container.scrollHeight;
+    }
+
+    createInputLine() {
+        if (this.container.querySelector('.input-line')) {
+            this.container.querySelector('.input-line').remove();
+        }
+
+        const inputLine = document.createElement('div');
+        inputLine.className = 'input-line';
+        inputLine.innerHTML = `
+            <span class="terminal-prompt">krishna@portfolioos</span>:<span class="terminal-path">${this.currentPath}</span>$ 
+            <input type="text" class="terminal-input" style="background: transparent; border: none; outline: none; color: white; font-family: inherit; font-size: inherit; width: 70%;">`;
+        this.container.appendChild(inputLine);
+        
+        const input = inputLine.querySelector('.terminal-input');
+        input.focus();
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const command = input.value.trim();
+                if (command) {
+                    this.commandHistory.push(command);
+                    this.historyIndex = this.commandHistory.length;
+                }
+                this.executeCommand(command);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    input.value = this.commandHistory[this.historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (this.historyIndex < this.commandHistory.length - 1) {
+                    this.historyIndex++;
+                    input.value = this.commandHistory[this.historyIndex];
+                } else {
+                    this.historyIndex = this.commandHistory.length;
+                    input.value = '';
+                }
+            }
+        });
+        this.container.scrollTop = this.container.scrollHeight;
+    }
+
+    executeCommand(command) {
+        this.print(`<span class="terminal-prompt">krishna@portfolioos</span>:<span class="terminal-path">${this.currentPath}</span>$ ${command}`);
+        const parts = command.split(' ');
+        const cmd = parts[0];
+        const args = parts.slice(1);
+
+        switch (cmd) {
+            case 'help': this.showHelp(); break;
+            case 'portfolio': this.showPortfolio(); break;
+            case 'neofetch': this.showNeofetch(); break;
+            case 'ls': this.listFiles(args[0]); break;
+            case 'cd': this.changeDirectory(args[0]); break;
+            case 'cat': this.showFile(args.join(' ')); break;
+            case 'pwd': this.print(this.currentPath); break;
+            case 'whoami': this.print('krishna'); break;
+            case 'date': this.print(new Date().toString()); break;
+            case 'clear': this.container.innerHTML = ''; break;
+            case 'echo': this.print(args.join(' ')); break;
+            case 'uname': this.print('PortfolioOS 20.04.6 LTS x86_64'); break;
+            case 'ps': this.print('  PID TTY          TIME CMD\n 1234 pts/0    00:00:01 bash\n 5678 pts/0    00:00:00 portfolio-app'); break;
+            case 'history': this.commandHistory.forEach((c, i) => this.print(`  ${i + 1}  ${c}`)); break;
+            case 'contact': this.showContact(); break;
+            case 'projects': this.showProjects(); break;
+            case 'skills': this.showSkills(); break;
+            case 'open':
+                if (args[0] && ['files', 'projects', 'browser', 'settings', 'portfolio'].includes(args[0])) {
+                    this.openApp(args[0]);
+                } else {
+                    this.print('Usage: open [files|projects|browser|settings|portfolio]');
+                }
+                break;
+            case '': break;
+            default: this.print(`Command not found: ${cmd}. Type 'help' for available commands.`);
+        }
+        this.createInputLine();
+    }
+
+    showHelp() {
+        const help = `
+<span style="color: #4E9A06;">Available Commands:</span>
+
+<span style="color: #AD7FA8;">System:</span> help, clear, neofetch, uname, whoami, date, ps, history
+<span style="color: #AD7FA8;">File Ops:</span> ls, cd, cat, pwd
+<span style="color: #AD7FA8;">Portfolio:</span> portfolio, projects, skills, contact
+<span style="color: #AD7FA8;">Apps:</span> open [files|projects|browser|settings]
+<span style="color: #AD7FA8;">Utilities:</span> echo [text]
+
+<span style="color: var(--accent-blue);">Tip:</span> Use 'cat Documents/Resume.txt' to view my resume.`;
+        this.print(help);
+    }
+    
+    showPortfolio() {
+        const portfolio = `
+<span style="color: #4E9A06;">═════════ KRISHNA PATIL PORTFOLIO ═════════</span>
+<span style="color: #AD7FA8;">🎓 EDUCATION:</span> BCA 3rd Year, G.H Raisoni College (2026)
+<span style="color: #AD7FA8;">💻 SKILLS:</span> Python, JavaScript, HTML/CSS, Flask, React, Node.js, ML
+<span style="color: #AD7FA8;">🚀 PROJECTS:</span> BhashaConverter, Fake Review Detection, Online Book Store
+<span style="color: #AD7FA8;">📧 CONTACT:</span> 202krishnapatil@gmail.com | GitHub: kriss2012
+<span style="color: #4E9A06;">══════════════════════════════════════════════</span>
+Type 'open projects' to launch the interactive project viewer.`;
+        this.print(portfolio);
+    }
+
+    showProjects() {
+        const projects = `
+<span style="color: #AD7FA8;">🚀 GITHUB PROJECTS:</span>
+<span style="color: var(--accent-blue);">1. BhashaConverter:</span> Language Translation App (Python, React)
+<span style="color: var(--accent-blue);">2. FakeReviewDetection:</span> AI Analysis Tool (Python, ML)
+<span style="color: var(--accent-blue);">3. OnlineBookStore:</span> E-commerce Platform (HTML, CSS, JS)
+<span style="color: var(--accent-blue);">4. AdventureGame:</span> Interactive Web Game (JS, HTML5)
+Use 'open projects' to explore these in a GUI.`;
+        this.print(projects);
+    }
+
+    showSkills() {
+        const skills = `
+<span style="color: #AD7FA8;">💻 TECHNICAL SKILLS:</span>
+<span style="color: var(--accent-blue);">Languages:</span> Python (Advanced), JavaScript (Intermediate), HTML/CSS, SQL
+<span style="color: var(--accent-blue);">Frameworks:</span> Flask, React, Node.js, NLTK
+<span style="color: var(--accent-blue);">Tools:</span> VS Code, Git, Google Cloud APIs, Docker`;
+        this.print(skills);
+    }
+
+    showContact() {
+        const contact = `
+<span style="color: #AD7FA8;">📧 CONTACT INFORMATION:</span>
+<span style="color: var(--accent-blue);">Email:</span> 202krishnapatil@gmail.com
+<span style="color: var(--accent-blue);">LinkedIn:</span> linkedin.com/in/krishna-chandrakant-patil-3396
+<span style="color: var(--accent-blue);">GitHub:</span> github.com/kriss2012`;
+        this.print(contact);
+    }
+
+    showNeofetch() {
+        this.printWelcome();
+    }
+    
+    openApp(appName) {
+        this.print(`Launching ${appName}...`);
+        setTimeout(() => appManager.openApp(appName), 500);
+    }
+
+    listFiles(path) {
+        const targetPath = path ? this.resolvePath(path) : this.currentPath;
+        const node = this.getNodeAtPath(targetPath);
+        if (!node || node.type !== 'directory') {
+            this.print(`ls: cannot access '${path || ''}': No such file or directory`);
+            return;
+        }
+        const items = Object.keys(node.children);
+        if (items.length === 0) { this.print(''); return; }
+        const coloredItems = items.map(item => {
+            return node.children[item].type === 'directory' ? `<span style="color: var(--accent-blue); font-weight: bold;">${item}/</span>` : `<span>${item}</span>`;
+        });
+        this.print(coloredItems.join('  '));
+    }
+
+    changeDirectory(path) {
+        if (!path || path === '~') { this.currentPath = '/home/krishna'; return; }
+        const targetPath = this.resolvePath(path);
+        const node = this.getNodeAtPath(targetPath);
+        if (!node) { this.print(`cd: no such file or directory: ${path}`); }
+        else if (node.type !== 'directory') { this.print(`cd: not a directory: ${path}`); }
+        else { this.currentPath = targetPath; }
+    }
+
+    showFile(filename) {
+        if (!filename) { this.print('cat: missing file operand'); return; }
+        const filePath = this.resolvePath(filename);
+        const node = this.getNodeAtPath(filePath);
+        if (!node) { this.print(`cat: ${filename}: No such file or directory`); }
+        else if (node.type !== 'file') { this.print(`cat: ${filename}: Is a directory`); }
+        else { this.print(node.content.replace(/\n/g, '<br>')); }
+    }
+
+    resolvePath(path) {
+        if (path.startsWith('/')) return path;
+        if (path === '..') {
+            const parts = this.currentPath.split('/').filter(p => p);
+            parts.pop();
+            return '/' + parts.join('/');
+        }
+        if (path === '.') return this.currentPath;
+        return this.currentPath === '/' ? `/${path}` : `${this.currentPath}/${path}`;
+    }
+
+    getNodeAtPath(path) {
+        if (path === '/') return VFS['/'];
+        const parts = path.split('/').filter(p => p);
+        let current = VFS['/'];
+        for (const part of parts) {
+            if (!current.children || !current.children[part]) return null;
+            current = current.children[part];
+        }
+        return current;
+    }
+}
+
+
+class FileManager {
+    constructor(windowId, startPath = null) {
+        this.windowId = windowId;
+        this.currentPath = startPath ? this.resolveStartPath(startPath) : '/home/krishna';
+        this.history = [this.currentPath];
+        this.historyIndex = 0;
+        this.initialize();
+    }
+    
+    resolveStartPath(param) {
+        if (param === 'projects') return '/home/krishna/Projects';
+        if (param === 'documents') return '/home/krishna/Documents';
+        return '/home/krishna';
+    }
+
+    initialize() {
+        this.renderSidebar();
+        this.renderContent();
+        this.updateBreadcrumb();
+    }
+
+    renderSidebar() {
+        const sidebar = document.querySelector(`[data-window-id="${this.windowId}"] #file-sidebar`);
+        const quickAccess = [
+            { name: 'Home', path: '/home/krishna', icon: '🏠' },
+            { name: 'Desktop', path: '/home/krishna/Desktop', icon: '🖥️' },
+            { name: 'Documents', path: '/home/krishna/Documents', icon: '📄' },
+            { name: 'Projects', path: '/home/krishna/Projects', icon: '💼' }
+        ];
+
+        sidebar.innerHTML = `
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #64748b;">Quick Access</h4>
+            ${quickAccess.map(item => `<div class="file-item" onclick="fileManager.navigateTo('${item.path}')"><span>${item.icon}</span><span>${item.name}</span></div>`).join('')}`;
+    }
+
+    renderContent() {
+        const content = document.querySelector(`[data-window-id="${this.windowId}"] #file-content`);
+        const node = this.getNodeAtPath(this.currentPath);
+        if (!node || node.type !== 'directory') {
+            content.innerHTML = '<p>Directory not found.</p>';
+            return;
+        }
+        const items = Object.entries(node.children);
+        if (items.length === 0) {
+            content.innerHTML = '<div style="text-align:center; padding: 40px; color: #64748b;"><h3>This folder is empty.</h3></div>';
+            return;
+        }
+        content.innerHTML = `<div class="file-grid">${items.map(([name, item]) => `
+            <div class="file-grid-item" ondblclick="fileManager.openItem('${name}')">
+                <div class="file-icon">${item.type === 'directory' ? '📁' : '📄'}</div>
+                <div class="file-name">${name}</div>
+            </div>`).join('')}</div>`;
+    }
+
+    updateBreadcrumb() {
+        const breadcrumb = document.querySelector(`[data-window-id="${this.windowId}"] #breadcrumb`);
+        if (!breadcrumb) return;
+        const parts = this.currentPath.split('/').filter(p => p);
+        let currentPath = '';
+        const items = [`<span class="breadcrumb-item" onclick="fileManager.navigateTo('/')">🏠</span>`];
+        parts.forEach(part => {
+            currentPath += '/' + part;
+            items.push(`<span>›</span><span class="breadcrumb-item" onclick="fileManager.navigateTo('${currentPath}')">${part}</span>`);
+        });
+        breadcrumb.innerHTML = items.join(' ');
+    }
+
+    navigateTo(path) {
+        this.currentPath = path;
+        this.history = this.history.slice(0, this.historyIndex + 1);
+        this.history.push(path);
+        this.historyIndex = this.history.length - 1;
+        this.renderContent();
+        this.updateBreadcrumb();
+    }
+
+    openItem(name) {
+        const node = this.getNodeAtPath(this.currentPath);
+        const item = node.children[name];
+        if (item.type === 'directory') {
+            this.navigateTo(this.currentPath === '/' ? `/${name}` : `${this.currentPath}/${name}`);
+        } else {
+            appManager.openApp('code');
+            setTimeout(() => {
+                const windows = document.querySelectorAll('[data-app-type="code"]');
+                if (windows.length > 0) {
+                    const latestWindow = windows[windows.length - 1];
+                    const textarea = latestWindow.querySelector('textarea');
+                    const filenameSpan = latestWindow.querySelector('#editor-filename');
+                    if (textarea && filenameSpan) {
+                        textarea.value = item.content;
+                        filenameSpan.textContent = name;
+                    }
+                }
+            }, 100);
+        }
+    }
+    
+    goBack() { if (this.historyIndex > 0) { this.historyIndex--; this.navigateTo(this.history[this.historyIndex]); } }
+    goForward() { if (this.historyIndex < this.history.length - 1) { this.historyIndex++; this.navigateTo(this.history[this.historyIndex]); } }
+    goUp() { const parts = this.currentPath.split('/').filter(p => p); if (parts.length > 0) { parts.pop(); this.navigateTo('/' + parts.join('/')); } }
+    getNodeAtPath(path) { if (path === '/') return VFS['/']; const parts = path.split('/').filter(p => p); let current = VFS['/']; for (const part of parts) { if (!current.children || !current.children[part]) return null; current = current.children[part]; } return current; }
+}
+
+// Global instances
+let appManager;
+let fileManager;
+let browserManager;
+
+// Global functions for onclick handlers
+function openApp(appType, param) { appManager.openApp(appType, param); }
+function openExternal(url) {
+    showNotification('Opening external link in a new tab...');
+    setTimeout(() => { window.open(url, '_blank'); }, 500);
+}
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+function updateClock() {
+    const clock = document.getElementById('clock-date');
+    if (!clock) return;
+    const now = new Date();
+    clock.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// Boot sequence and initialization
+function bootSystem() {
+    const bootScreen = document.getElementById('boot-screen');
+    const bootText = document.getElementById('boot-text');
+    const bootMessages = ['Initializing kernel...', 'Loading user profile...', 'Mounting VFS...', 'Starting services...', 'PortfolioOS ready! Welcome.'];
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < bootMessages.length) {
+            bootText.textContent += `[${(i * 0.2).toFixed(6)}] ${bootMessages[i]}\n`;
+            bootText.scrollTop = bootText.scrollHeight;
+            i++;
+        } else {
+            clearInterval(interval);
+            setTimeout(() => {
+                bootScreen.style.opacity = '0';
+                setTimeout(() => {
+                    bootScreen.remove();
+                    document.getElementById('desktop').style.opacity = '1';
+                    setTimeout(() => {
+                        appManager.openApp('terminal');
+                        setTimeout(() => appManager.openApp('projects'), 1000);
+                    }, 500);
+                }, 1000);
+            }, 500);
+        }
+    }, 300);
+}
+
+// DOMContentLoaded listener
+document.addEventListener('DOMContentLoaded', () => {
+    appManager = new AppManager();
+    document.getElementById('login-btn').addEventListener('click', () => {
+        const loginScreen = document.getElementById('login-screen');
+        const bootScreen = document.getElementById('boot-screen');
+        loginScreen.style.opacity = '0';
+        setTimeout(() => {
+            loginScreen.remove();
+            bootScreen.classList.remove('hidden');
+            bootSystem();
+        }, 1000);
+    });
+    
+    document.getElementById('activities-btn').addEventListener('click', () => {
+        const overlay = document.getElementById('activities-overview');
+        const desktop = document.getElementById('desktop');
+        const isActive = overlay.classList.toggle('active');
+        desktop.classList.toggle('overview-mode', isActive);
+        
+        if (isActive) {
+            const preview = document.getElementById('workspace-preview');
+            preview.innerHTML = '';
+            appManager.windows.forEach((window) => {
+                if (!window.element.classList.contains('minimized')) {
+                    const previewEl = document.createElement('div');
+                    previewEl.className = 'window-preview';
+                    previewEl.innerHTML = `<div><div style="font-size: 24px;">${appManager.getAppConfig(window.appType).icon}</div><div>${appManager.getAppConfig(window.appType).title}</div></div>`;
+                    previewEl.onclick = () => {
+                        appManager.focusWindow(window.element);
+                        overlay.classList.remove('active');
+                        desktop.classList.remove('overview-mode');
+                    };
+                    preview.appendChild(previewEl);
+                }
+            });
+            if (preview.children.length === 0) {
+                preview.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">No open windows</div>';
+            }
+        }
+    });
+
+    const contextMenu = document.getElementById('context-menu');
+    document.addEventListener('contextmenu', e => { e.preventDefault(); contextMenu.style.display = 'block'; contextMenu.style.left = `${e.pageX}px`; contextMenu.style.top = `${e.pageY}px`; });
+    document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
+    
+    updateClock();
+    setInterval(updateClock, 1000);
+});
+    </script>
+</body>
+</html>
