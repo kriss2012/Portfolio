@@ -562,7 +562,121 @@ body { font-family: var(--font-family-base); background: linear-gradient(135deg,
             <button class="chat-send">Send</button>
         </div>
     </div>
+    <script>
+        // portfolio.js
 
-    
+document.addEventListener("DOMContentLoaded", () => {
+  // Navigation links and sections
+  const navItems = document.querySelectorAll(".nav-item[data-section]");
+  const sections = Array.from(navItems).map((nav) =>
+    document.getElementById(nav.dataset.section)
+  );
+
+  navItems.forEach((navItem) => {
+    navItem.addEventListener("click", (e) => {
+      e.preventDefault();
+      const sectionId = navItem.dataset.section;
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.scrollIntoView({ behavior: "smooth" });
+      }
+      setActiveNavItem(navItem);
+    });
+  });
+
+  function setActiveNavItem(activeItem) {
+    navItems.forEach((item) => item.classList.remove("active"));
+    activeItem.classList.add("active");
+  }
+
+  // Chat toggle
+  const chatBubble = document.querySelector(".chat-bubble");
+  const chatWindow = document.getElementById("chatWindow");
+  const chatCloseBtn = chatWindow.querySelector(".chat-close");
+  const chatSendBtn = chatWindow.querySelector(".chat-send");
+  const chatInput = chatWindow.querySelector("#chatInput");
+  const chatMessages = chatWindow.querySelector("#chatMessages");
+
+  chatBubble.addEventListener("click", () => {
+    chatWindow.classList.toggle("active");
+    if (chatWindow.classList.contains("active")) {
+      chatInput.focus();
+    }
+  });
+
+  chatCloseBtn.addEventListener("click", () => {
+    chatWindow.classList.remove("active");
+  });
+
+  // Add a chat message (user or bot)
+  function addMessage(text, sender) {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Simulate bot response (placeholder response)
+  function botResponse(userText) {
+    // Simple canned responses based on keywords (expand as needed)
+    let response = "Sorry, I don't understand. Could you rephrase?";
+    const text = userText.toLowerCase();
+
+    if (text.includes("background") || text.includes("about")) {
+      response = "Krishna is an aspiring full-stack developer and BCA student.";
+    } else if (text.includes("projects")) {
+      response = "Krishna has projects in Python, Java, C++, AI, and web development.";
+    } else if (text.includes("skills")) {
+      response =
+        "Skills include React, JavaScript, Python, Java, Spring Boot, AWS, and more.";
+    } else if (text.trim() === "") {
+      response = "Please enter a question to ask me.";
+    } else {
+      response = "Thanks for your message! I'll get back to you soon.";
+    }
+
+    return response;
+  }
+
+  // Send chat input
+  function sendChat() {
+    const userText = chatInput.value.trim();
+    if (!userText) return;
+
+    addMessage(userText, "user");
+    chatInput.value = "";
+    // Show typing indicator (optional)
+
+    setTimeout(() => {
+      const botText = botResponse(userText);
+      addMessage(botText, "bot");
+    }, 700);
+  }
+
+  chatSendBtn.addEventListener("click", () => {
+    sendChat();
+  });
+
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendChat();
+    }
+  });
+
+  // Hero search box basic interaction
+  const heroSearchInput = document.getElementById("heroSearchInput");
+  heroSearchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const query = heroSearchInput.value.trim();
+      if (query) {
+        alert(`Search feature will be implemented soon: "${query}"`);
+      }
+    }
+  });
+});
+    </script>
 
 </body></html>
