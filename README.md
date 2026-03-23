@@ -1,10 +1,11 @@
 🌐 Personal Website & Portfolio | GitHub Pages
 
-"Repo Size" (https://img.shields.io/github/repo-size/kriss2012/Portfolio?color=blue)
+"Repo Size" (https://img.shields.io/github/repo-size/kriss2012/Portfolio)
 "Stars" (https://img.shields.io/github/stars/kriss2012/Portfolio?style=social)
 "Forks" (https://img.shields.io/github/forks/kriss2012/Portfolio?style=social)
 "Last Commit" (https://img.shields.io/github/last-commit/kriss2012/Portfolio)
-"GitHub Pages" (https://img.shields.io/badge/Hosted%20on-GitHub%20Pages-green)
+"Website" (https://img.shields.io/badge/Website-Live-green)
+"GitHub Pages" (https://img.shields.io/badge/Hosted%20On-GitHub%20Pages-blue)
 "HTML" (https://img.shields.io/badge/HTML-5-orange)
 "CSS" (https://img.shields.io/badge/CSS-3-blue)
 "JavaScript" (https://img.shields.io/badge/JavaScript-ES6-yellow)
@@ -36,10 +37,10 @@ These websites showcase my projects, skills, and web development work.
 
 ✨ Features
 
-- 👤 About Me Section
-- 🛠️ Skills Section
-- 📂 Projects Section
-- 📞 Contact Section
+- 👤 About Me
+- 🛠️ Skills
+- 📂 Projects
+- 📞 Contact
 - 📱 Responsive Design
 - 🧭 Navigation Menu
 
@@ -60,23 +61,13 @@ These websites showcase my projects, skills, and web development work.
 - 👤 About Section
 - 📞 Contact Section
 - 📱 Responsive Layout
-- 🎨 Modern UI Design
+- 🎨 Modern UI
 
 💻 Technologies Used
 
 - HTML5
 - CSS3
 - JavaScript
-
----
-
-🛠️ Tech Stack
-
-Technology| Purpose
-HTML5| Structure
-CSS3| Styling
-JavaScript| Interactivity
-GitHub Pages| Hosting
 
 ---
 
@@ -98,21 +89,7 @@ Portfolio/
 git clone https://github.com/kriss2012/Portfolio.git
 cd Portfolio
 
-Then open index.html in your browser.
-
----
-
-🌍 Deployment
-
-This project is deployed using GitHub Pages Free Static Hosting.
-
-Steps:
-
-1. Go to Repository Settings
-2. Open Pages Section
-3. Select Branch = main
-4. Save
-5. Website will be live
+Open index.html in browser.
 
 ---
 
@@ -120,17 +97,17 @@ Steps:
 
 Krishna Patil
 
-- GitHub: https://github.com/kriss2012
-- Portfolio: https://kriss2012.github.io/Portfolio/
+GitHub: https://github.com/kriss2012
+Portfolio: https://kriss2012.github.io/Portfolio/
 
 ---
 
 ⭐ Support
 
-If you like this project, please star ⭐ the repository.
+If you like this project, please ⭐ the repository.
 
 ---
 
 📄 License
 
-This project is open source and free to use.
+Free to use.
