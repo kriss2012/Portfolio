@@ -11,7 +11,7 @@ These websites showcase my projects, skills, and web development work.
 
 🌍 Main Website (Index Project)
 
-👉 https://kriss2012.github.io/
+👉 https://kriss2012.github.io/Portfolio/portfolio.html
 
 💼 Portfolio Website
 
