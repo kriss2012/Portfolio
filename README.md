@@ -1,16 +1,4 @@
-🌐 Personal Website & Portfolio | GitHub Pages
-
-"Repo Size" (https://img.shields.io/github/repo-size/kriss2012/Portfolio)
-"Stars" (https://img.shields.io/github/stars/kriss2012/Portfolio?style=social)
-"Forks" (https://img.shields.io/github/forks/kriss2012/Portfolio?style=social)
-"Last Commit" (https://img.shields.io/github/last-commit/kriss2012/Portfolio)
-"Website" (https://img.shields.io/badge/Website-Live-green)
-"GitHub Pages" (https://img.shields.io/badge/Hosted%20On-GitHub%20Pages-blue)
-"HTML" (https://img.shields.io/badge/HTML-5-orange)
-"CSS" (https://img.shields.io/badge/CSS-3-blue)
-"JavaScript" (https://img.shields.io/badge/JavaScript-ES6-yellow)
-
----
+🌐 Personal Website & Portfolio |
 
 📌 About The Repository
 
