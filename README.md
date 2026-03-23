@@ -1,16 +1,24 @@
 🌐 Personal Website & Portfolio | GitHub Pages
 
-"GitHub repo size" (https://img.shields.io/github/repo-size/kriss2012/Portfolio)
-"GitHub stars" (https://img.shields.io/github/stars/kriss2012/Portfolio?style=social)
-"GitHub forks" (https://img.shields.io/github/forks/kriss2012/Portfolio?style=social)
-"GitHub last commit" (https://img.shields.io/github/last-commit/kriss2012/Portfolio)
-
-This repository contains my Personal Website and Portfolio Website hosted using GitHub Pages.
-These projects showcase my skills, projects, and web development work.
+"Repo Size" (https://img.shields.io/github/repo-size/kriss2012/Portfolio?color=blue)
+"Stars" (https://img.shields.io/github/stars/kriss2012/Portfolio?style=social)
+"Forks" (https://img.shields.io/github/forks/kriss2012/Portfolio?style=social)
+"Last Commit" (https://img.shields.io/github/last-commit/kriss2012/Portfolio)
+"GitHub Pages" (https://img.shields.io/badge/Hosted%20on-GitHub%20Pages-green)
+"HTML" (https://img.shields.io/badge/HTML-5-orange)
+"CSS" (https://img.shields.io/badge/CSS-3-blue)
+"JavaScript" (https://img.shields.io/badge/JavaScript-ES6-yellow)
 
 ---
 
-🔴 Live Demo
+📌 About The Repository
+
+This repository contains my Personal Website and Portfolio Website hosted using GitHub Pages.
+These websites showcase my projects, skills, and web development work.
+
+---
+
+🔴 Live Demo Links
 
 🌍 Main Website (Index Project)
 
@@ -22,22 +30,20 @@ These projects showcase my skills, projects, and web development work.
 
 ---
 
-📌 About The Projects
+📁 Projects
 
-1️⃣ Main Index Website
+1️⃣ Personal Website (Index)
 
-This is my main personal website homepage hosted using GitHub Pages.
+✨ Features
 
-Features
+- 👤 About Me Section
+- 🛠️ Skills Section
+- 📂 Projects Section
+- 📞 Contact Section
+- 📱 Responsive Design
+- 🧭 Navigation Menu
 
-- About Me Section
-- Skills Section
-- Project Links
-- Contact Information
-- Responsive Design
-- Navigation Menu
-
-Technologies Used
+💻 Technologies Used
 
 - HTML5
 - CSS3
@@ -47,18 +53,16 @@ Technologies Used
 
 2️⃣ Portfolio Website
 
-This is a dedicated portfolio website to showcase my projects and work.
+✨ Features
 
-Features
+- 🖼️ Portfolio Gallery
+- 📂 Project Showcase
+- 👤 About Section
+- 📞 Contact Section
+- 📱 Responsive Layout
+- 🎨 Modern UI Design
 
-- Portfolio Gallery
-- Project Showcase
-- About Section
-- Contact Section
-- Responsive Layout
-- Modern UI Design
-
-Technologies Used
+💻 Technologies Used
 
 - HTML5
 - CSS3
@@ -66,17 +70,17 @@ Technologies Used
 
 ---
 
-🛠️ Technologies Used
+🛠️ Tech Stack
 
-Technology| Use
-HTML| Website Structure
-CSS| Styling
+Technology| Purpose
+HTML5| Structure
+CSS3| Styling
 JavaScript| Interactivity
 GitHub Pages| Hosting
 
 ---
 
-📁 Project Structure
+📂 Project Structure
 
 Portfolio/
 │
@@ -85,50 +89,45 @@ Portfolio/
 ├── style.css
 ├── script.js
 ├── images/
-├── assets/
 └── README.md
 
 ---
 
-🚀 How To Run Locally
-
-1. Clone the repository
+🚀 Run Locally
 
 git clone https://github.com/kriss2012/Portfolio.git
-
-2. Open the folder
-
 cd Portfolio
 
-3. Open index.html in your browser
+Then open index.html in your browser.
 
 ---
 
-🌍 Deployment (GitHub Pages)
+🌍 Deployment
 
-This website is hosted using GitHub Pages Free Static Hosting.
+This project is deployed using GitHub Pages Free Static Hosting.
 
-Steps to deploy:
+Steps:
 
 1. Go to Repository Settings
-2. Click on Pages
+2. Open Pages Section
 3. Select Branch = main
-4. Click Save
-5. Your website will be live
+4. Save
+5. Website will be live
 
 ---
 
 👨‍💻 Author
 
 Krishna Patil
-GitHub: https://github.com/kriss2012
-Portfolio: https://kriss2012.github.io/Portfolio/
+
+- GitHub: https://github.com/kriss2012
+- Portfolio: https://kriss2012.github.io/Portfolio/
 
 ---
 
 ⭐ Support
 
-If you like this project, please ⭐ the repository.
+If you like this project, please star ⭐ the repository.
 
 ---
 
