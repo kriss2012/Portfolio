@@ -1,0 +1,632 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>KaliFolio OS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: full-viewport OS. #intro (boot film) sits above #os (wallpaper, top panel, windows, dock). Single deliberate dark look. */
+:root{--bg:#04060b;--bg2:#0a1120;--panel:rgba(10,16,30,.94);--panel2:#0f1830;--line:#1d2b47;--fg:#d6e3f5;--muted:#7f92b0;--accent:#367bf0;--green:#7dff6b;--warn:#ffa646;--red:#ff5c6c;--cyan:#4fd8ff;
+--ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color-scheme:dark}
+html,body{height:100%;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--ui);overflow:hidden;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input,textarea,select{font:inherit;color:var(--fg);background:#0a1224;border:1px solid var(--line);border-radius:6px;padding:6px 9px;-webkit-user-select:text;user-select:text}
+.btn{background:#13203d;border:1px solid #2a3d63;border-radius:6px;padding:6px 12px}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.dng:hover{border-color:var(--red);color:var(--red)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#243453;border-radius:6px}::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- intro ---------- */
+#intro{position:fixed;inset:0;background:#000;z-index:1000;overflow:hidden;transition:opacity .8s}
+#intro canvas{position:absolute;inset:0;width:100%;height:100%}
+#pc{transition:opacity .7s}
+#iterm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(940px,94vw);height:min(78vh,720px);background:#05070a;border:1px solid #1c2c4d;border-radius:10px;box-shadow:0 0 0 1px #000,0 30px 80px #000c,0 0 90px #12326e55;display:flex;flex-direction:column;opacity:0;transition:opacity .7s}
+.ititle{padding:9px 14px;background:#0d1526;border-bottom:1px solid #1c2c4d;border-radius:10px 10px 0 0;font:12px var(--mono);color:var(--muted);display:flex;gap:8px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;background:#2a3d63}
+#ibody{flex:1;margin:0;padding:14px 16px;overflow:hidden;font:13px/1.5 var(--mono);white-space:pre-wrap;word-break:break-word;color:#d6e3f5;display:flex;flex-direction:column;justify-content:flex-end}
+#ibody>div{white-space:pre-wrap}
+#globe{opacity:0;transition:opacity .8s;pointer-events:none}
+#skip{position:absolute;right:18px;bottom:18px;z-index:5;background:#0d1526cc;border:1px solid #2a3d63;border-radius:6px;padding:7px 14px;font:12px var(--mono);color:var(--muted)}
+#skip:hover{color:#fff;border-color:var(--accent)}
+.caret{display:inline-block;width:8px;height:15px;background:#bfe0ff;vertical-align:-2px;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.pb{color:#4a74c9}.pu{color:#4fd8ff;font-weight:700}.pd{color:#ffffff;font-weight:700}
+.b{font-weight:700}.d{color:#6b7c99}.r{color:#ff5c6c}.g{color:#7dff6b}.y{color:#ffd45c}.bl{color:#5da2ff}.m{color:#d98cff}.c{color:#4fd8ff}.w{color:#fff}
+
+/* ---------- desktop ---------- */
+#os{position:fixed;inset:0;opacity:0;transition:opacity 1s;overflow:hidden}
+#os.on{opacity:1}
+#wall{position:absolute;inset:0;background:
+ radial-gradient(900px 520px at 78% 18%,#12388a66,transparent 70%),
+ radial-gradient(700px 500px at 12% 90%,#0b6b8a40,transparent 70%),
+ repeating-linear-gradient(0deg,#ffffff06 0 1px,transparent 1px 44px),
+ repeating-linear-gradient(90deg,#ffffff06 0 1px,transparent 1px 44px),
+ linear-gradient(160deg,#050a16,#0a1530 55%,#04070f)}
+#wall[data-wp="1"]{background:radial-gradient(800px 600px at 50% 40%,#2d1a66aa,transparent 70%),repeating-linear-gradient(0deg,#ffffff07 0 1px,transparent 1px 36px),linear-gradient(160deg,#07040f,#140b2b)}
+#wall[data-wp="2"]{background:radial-gradient(900px 600px at 20% 20%,#0c5d3a88,transparent 70%),repeating-linear-gradient(90deg,#7dff6b0a 0 1px,transparent 1px 40px),linear-gradient(160deg,#030a07,#07160f)}
+#wall[data-wp="3"]{background:linear-gradient(135deg,#0a0d14,#1b2233 50%,#0a0d14)}
+#wmark{position:absolute;right:28px;bottom:96px;text-align:right;font:700 13px var(--mono);color:#ffffff30;letter-spacing:.14em;pointer-events:none}
+#wmark b{display:block;font-size:34px;letter-spacing:.06em;color:#ffffff22}
+#top{position:absolute;left:0;right:0;top:0;height:34px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px;z-index:9000;backdrop-filter:blur(8px)}
+#appsbtn{background:#13203d;border:1px solid #2a3d63;border-radius:6px;padding:3px 10px;font-weight:600;display:flex;gap:6px;align-items:center;white-space:nowrap}
+#tasks{flex:1;display:flex;gap:4px;overflow:hidden;min-width:0}
+.task{background:transparent;border:1px solid transparent;border-radius:5px;padding:3px 9px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--muted)}
+.task.act{background:#13203d;border-color:#2a3d63;color:var(--fg)}.task.min{opacity:.55}
+.tray{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);white-space:nowrap}
+#clock{color:var(--fg);font-variant-numeric:tabular-nums}
+#userbtn{background:none;border:0;color:var(--fg);padding:4px 6px;border-radius:5px}
+#userbtn:hover,.tray button:hover{background:#13203d}
+#icons{position:absolute;left:12px;top:46px;bottom:90px;display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;gap:6px;z-index:1}
+.dicon{width:84px;padding:6px 2px;border-radius:8px;text-align:center;font-size:12px;cursor:default;border:1px solid transparent;background:none;color:var(--fg)}
+.dicon:hover,.dicon.sel{background:#ffffff12;border-color:#ffffff1c}
+.dicon .ic{margin:0 auto 4px}.dicon span{display:block;word-break:break-word;text-shadow:0 1px 3px #000}
+.ic{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;font:700 18px var(--mono);color:#fff;box-shadow:inset 0 1px 0 #fff3,0 4px 10px #0007;flex:none}
+.ic.sm{width:26px;height:26px;border-radius:7px;font-size:12px}
+#dock{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;max-width:calc(100% - 20px);display:flex;gap:8px;padding:8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;z-index:9000;overflow-x:auto;backdrop-filter:blur(8px)}
+.dk{position:relative;background:none;border:0;padding:3px;border-radius:12px;flex:none}
+.dk:hover{background:#ffffff14;transform:translateY(-3px)}.dk{transition:transform .12s}
+.dk.run::after{content:"";position:absolute;bottom:-3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--cyan)}
+.dk .tip{display:none}
+/* windows */
+#wins{position:absolute;inset:0;z-index:5;pointer-events:none}
+.win{position:absolute;pointer-events:auto;background:var(--panel);border:1px solid #2a3d63;border-radius:9px;box-shadow:0 18px 50px #000b,0 0 0 1px #000;display:flex;flex-direction:column;min-width:260px;min-height:160px;overflow:hidden;animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.win.foc{border-color:#3d63b3;box-shadow:0 22px 60px #000c,0 0 0 1px #000,0 0 28px #367bf033}
+.win.max{left:0!important;top:34px!important;width:100%!important;height:calc(100% - 34px - 74px)!important;border-radius:0}
+.win.hid{display:none}
+.tb{height:34px;flex:none;display:flex;align-items:center;gap:8px;padding:0 8px;background:linear-gradient(#142243,#0e1830);cursor:default;touch-action:none}
+.tb .wt{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;font-size:13px}
+.wc{display:flex;gap:6px}.wc button{width:20px;height:20px;border-radius:50%;border:0;background:#2a3d63;font-size:11px;line-height:1;display:grid;place-items:center;color:#cfe}
+.wc button:hover{background:#3d63b3}.wc .x:hover{background:var(--red)}
+.wb{flex:1;min-height:0;overflow:auto;position:relative;-webkit-user-select:text;user-select:text}
+.rz{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 55%,#4a6aa8 55% 62%,transparent 62% 72%,#4a6aa8 72% 79%,transparent 79%)}
+.win.max .rz{display:none}
+/* menu, ctx, toast, dialog */
+#menu{position:absolute;left:8px;top:38px;width:min(380px,calc(100% - 16px));max-height:calc(100% - 130px);background:var(--panel);border:1px solid #2a3d63;border-radius:10px;box-shadow:0 18px 50px #000c;z-index:9500;display:flex;flex-direction:column;overflow:hidden}
+#menu input{margin:10px;width:calc(100% - 20px);box-sizing:border-box}
+#mlist{overflow:auto;padding:0 6px 8px}
+.mh{font:700 11px var(--mono);letter-spacing:.1em;color:var(--muted);padding:10px 8px 4px;text-transform:uppercase}
+.mi{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:6px 8px;border-radius:6px}
+.mi:hover{background:#17284b}.mi small{color:var(--muted);display:block}
+.ctx{position:fixed;background:var(--panel);border:1px solid #2a3d63;border-radius:8px;padding:4px;z-index:9800;box-shadow:0 12px 30px #000c;min-width:170px}
+.ctx button{display:block;width:100%;text-align:left;background:none;border:0;padding:6px 10px;border-radius:5px}
+.ctx button:hover{background:#17284b}.ctx hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+#toasts{position:fixed;right:12px;top:44px;display:flex;flex-direction:column;gap:8px;z-index:9900;pointer-events:none}
+.toast{background:#13203d;border:1px solid #2a3d63;border-left:3px solid var(--accent);border-radius:6px;padding:8px 12px;box-shadow:0 8px 24px #000a;animation:pop .2s;max-width:300px}
+.dlg{position:fixed;inset:0;background:#0009;display:grid;place-items:center;z-index:9950}
+.dlg>div{background:var(--panel2);border:1px solid #2a3d63;border-radius:10px;padding:18px;width:min(380px,90vw);display:flex;flex-direction:column;gap:12px}
+.dlg .row{display:flex;gap:8px;justify-content:flex-end}
+/* terminal */
+.term{background:#05080e;font:13px/1.5 var(--mono);padding:8px 10px;box-sizing:border-box;cursor:text;color:#d6e3f5}
+.tout{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit}
+.tout .echo{margin-top:2px}
+.tline{display:block}.trow{display:flex;align-items:center}
+.trow input{flex:1;min-width:0;background:none;border:0;padding:0;font:inherit;color:#fff;outline:none!important;caret-color:#bfe0ff}
+.tsym{color:#4a74c9;white-space:pre}
+/* apps */
+.pad{padding:14px}.col{display:flex;flex-direction:column;gap:10px}.rowf{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}.mono{font-family:var(--mono)}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line);overflow-x:auto;flex:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:7px 12px;color:var(--muted);white-space:nowrap}
+.tab.on{color:#fff;border-color:var(--accent)}
+.app{display:flex;flex-direction:column;height:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.card{background:#0c152a;border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.card h4{margin:0 0 2px;font-size:14px}.card p{margin:0 0 8px;color:var(--muted);font-size:12.5px}
+.tbl{width:100%;border-collapse:collapse;font:12px var(--mono)}
+.tbl th{position:sticky;top:0;background:#0f1a33;text-align:left;font-weight:600;color:var(--muted);padding:5px 8px}
+.tbl td{padding:3px 8px;white-space:nowrap;border-bottom:1px solid #121e38}
+.tbl tr.sel td{background:#1a3566}
+.bar{height:8px;background:#13203d;border-radius:5px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.hero{padding:26px 22px;background:radial-gradient(500px 220px at 85% 0%,#367bf055,transparent),linear-gradient(#0d1730,#0a1224)}
+.hero h1{margin:0;font-size:clamp(26px,5vw,40px);letter-spacing:-.01em}.hero .tag{font:13px var(--mono);color:var(--green);margin-bottom:8px}
+.chip{display:inline-block;padding:3px 9px;border-radius:99px;background:#13203d;border:1px solid #2a3d63;font:12px var(--mono);margin:0 6px 6px 0}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px}
+.calc button{padding:14px 0;font:600 17px var(--mono);background:#13203d;border:1px solid #2a3d63;border-radius:8px}
+.calc button.op{background:#17306a}.calc button.eq{background:var(--accent)}
+.calcd{padding:14px;text-align:right;font:600 28px var(--mono);background:#060a14;min-height:34px;overflow:hidden}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;padding:12px;align-content:start}
+.fitem{text-align:center;padding:8px 4px;border-radius:8px;border:1px solid transparent;background:none;font-size:12.5px;word-break:break-word}
+.fitem:hover{background:#13203d}.fitem.sel{background:#1a3566;border-color:#3d63b3}
+.side{width:140px;flex:none;border-right:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:2px;overflow:auto}
+.side button{background:none;border:0;text-align:left;padding:6px 8px;border-radius:6px;color:var(--muted)}.side button:hover{background:#13203d;color:#fff}
+@media(max-width:720px){.side{display:none}.win.max{height:calc(100% - 34px - 70px)!important}#wmark{display:none}.tray .hide-s{display:none}.dicon{width:72px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="intro">
+  <canvas id="pc"></canvas>
+  <div id="iterm"><div class="ititle"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span style="margin-left:8px">root@kali: ~/portfolio</span></div><pre id="ibody"></pre></div>
+  <canvas id="globe"></canvas>
+  <button id="skip">Skip intro &rsaquo;</button>
+</div>
+
+<div id="os">
+  <div id="wall" data-wp="0"></div>
+  <div id="wmark"><b>KALIFOLIO OS</b>simulated pentest workstation</div>
+  <div id="icons"></div>
+  <div id="wins"></div>
+  <div id="top">
+    <button id="appsbtn" aria-label="Applications menu">&#9776; Applications</button>
+    <div id="tasks"></div>
+    <div class="tray"><span class="hide-s" title="Lab network">&#8644; 10.10.14.2</span><span class="hide-s" title="Battery">&#9646;&#9646;&#9646; 100%</span><span id="clock"></span><button id="userbtn">kali &#9662;</button></div>
+  </div>
+  <div id="dock"></div>
+  <div id="menu" hidden></div>
+</div>
+<div id="toasts"></div>
+<script>
+(function(){"use strict";
+/* ================= core helpers ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const ease=x=>x*x*(3-2*x);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const store={get(k,d){try{const v=localStorage.getItem('kfos.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('kfos.'+k,JSON.stringify(v))}catch(e){}},clear(){try{Object.keys(localStorage).filter(k=>k.startsWith('kfos.')).forEach(k=>localStorage.removeItem(k))}catch(e){}}};
+const C={r:'\x1b[31m',g:'\x1b[32m',y:'\x1b[33m',b:'\x1b[34m',m:'\x1b[35m',c:'\x1b[36m',w:'\x1b[37m',d:'\x1b[90m',B:'\x1b[1m',x:'\x1b[0m'};
+const ACLS={1:'b',2:'d',31:'r',32:'g',33:'y',34:'bl',35:'m',36:'c',37:'w',90:'d'};
+function ansi(s){let open=false;let o=esc(s).replace(/\x1b\[([0-9;]*)m/g,(m,c)=>{const cl=(c||'0').split(';').map(n=>ACLS[+n]).filter(Boolean);let r=open?'</span>':'';open=false;if(cl.length){r+='<span class="'+cl.join(' ')+'">';open=true}return r});return open?o+'</span>':o}
+const stripAnsi=s=>s.replace(/\x1b\[[0-9;]*m/g,'');
+const pad=(s,n)=>String(s).padEnd(n);
+const fmtDate=d=>d.toLocaleString('en-US',{weekday:'short',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(',','');
+
+/* ================= settings ================= */
+const settings=Object.assign({wp:0,accent:'#367bf0',h24:true,installed:[]},store.get('settings',{}));
+const saveSettings=()=>store.set('settings',settings);
+function applyAccent(){document.documentElement.style.setProperty('--accent',settings.accent)}
+function applyWall(){$('#wall').dataset.wp=settings.wp}
+
+/* ================= virtual filesystem ================= */
+const D=(c={})=>({t:'d',c}),F=(d='')=>({t:'f',d});
+const OWNER={name:'Your Name',role:'Ethical Hacker · Security Engineer · Full-Stack Developer',email:'you@example.com',github:'github.com/your-handle',about:'I break things on purpose, with permission, so they stay fixed. I build secure web apps, run lab environments for practice, and write up what I learn.'};
+function defaultFS(){return D({home:D({kali:D({
+ Desktop:D({'README.txt':F('Welcome to KaliFolio OS.\n\nThis is a simulated pentest workstation that runs entirely in your browser.\n- Open the Terminal and type: help\n- Install apps with: sudo apt install calculator  (or the Software app)\n- All scanning tools target the built-in lab network only (10.10.14.0/24).\n')}),
+ Documents:D({'rules-of-engagement.txt':F('RULES OF ENGAGEMENT (lab)\n1. Test only systems you own or have written permission to test.\n2. Stay inside the agreed scope (see scope.txt).\n3. Log everything. Report findings responsibly.\n4. No denial-of-service, no data exfiltration, no persistence.\n'),'scope.txt':F('In scope:\n  10.10.14.0/24  (portfolio.lab, vuln-lab.lab, gateway.lab)\n  127.0.0.1\nOut of scope:\n  everything else\n'),'notes.md':F('# Pentest notes\n\n- recon -> enumeration -> analysis -> report\n')}),
+ Downloads:D(),Pictures:D(),
+ Projects:D({'recon-dashboard':D({'README.md':F('# Recon Dashboard\nAsset inventory and port history for the lab network.\n'),'scan.sh':F('#!/bin/sh\nnmap -sV 10.10.14.7\n')}),'hello.txt':F('hello world\n')}),
+ '.zshrc':F('alias ll="ls -la"\n')})}),
+ etc:D({hostname:F('kali\n'),hosts:F('127.0.0.1 localhost\n10.10.14.7 portfolio.lab\n10.10.14.20 vuln-lab.lab\n10.10.14.1 gateway.lab\n'),'os-release':F('PRETTY_NAME="KaliFolio OS (Kali-inspired simulation)"\nID=kalifolio\nVERSION="2026.4"\n'),passwd:F('root:x:0:0:root:/root:/usr/bin/zsh\nkali:x:1000:1000:Kali,,,:/home/kali:/usr/bin/zsh\n')}),
+ var:D({log:D({'auth.log':F('Oct 13 10:02:11 kali sshd[812]: Server listening on 0.0.0.0 port 22.\nOct 13 10:41:07 kali sudo: kali : TTY=pts/0 ; COMMAND=/usr/bin/apt update\n')})}),
+ tmp:D(),root:D(),usr:D({bin:D(),share:D({wordlists:D({'common.txt':F('about\nadmin\nbackup\ncontact\nprojects\n.git\nlogin\n')})})})})}
+let fs=store.get('fs',null)||defaultFS();
+const saveFS=()=>{store.set('fs',fs);window.dispatchEvent(new Event('fschange'))};
+function norm(p,cwd){if(!p)return cwd;if(p==='~')p='/home/kali';else if(p.startsWith('~/'))p='/home/kali'+p.slice(1);if(p[0]!=='/')p=cwd+'/'+p;const o=[];for(const s of p.split('/')){if(!s||s==='.')continue;if(s==='..')o.pop();else o.push(s)}return '/'+o.join('/')}
+function node(p){let n=fs;for(const s of p.split('/').filter(Boolean)){if(n.t!=='d'||!Object.prototype.hasOwnProperty.call(n.c,s))return null;n=n.c[s]}return n}
+function split(p){const a=p.split('/').filter(Boolean);const name=a.pop();return[node('/'+a.join('/')),name]}
+function writeFile(p,d,append){const[par,name]=split(p);if(!par||par.t!=='d'||!name)return false;const ex=par.c[name];if(ex&&ex.t==='d')return false;if(ex&&append)ex.d+=d;else par.c[name]=F(d);saveFS();return true}
+function mkdir(p,deep){const parts=p.split('/').filter(Boolean);let n=fs;for(let i=0;i<parts.length;i++){const s=parts[i];if(!Object.prototype.hasOwnProperty.call(n.c,s)){if(i<parts.length-1&&!deep)return false;n.c[s]=D()}else if(n.c[s].t!=='d')return false;n=n.c[s]}saveFS();return true}
+function removePath(p){const[par,name]=split(p);if(!par||!(name in par.c))return false;delete par.c[name];saveFS();return true}
+function copyNode(n){return JSON.parse(JSON.stringify(n))}
+function listDir(p){const n=node(p);return n&&n.t==='d'?Object.keys(n.c).sort((a,b)=>(n.c[b].t==='d')-(n.c[a].t==='d')||a.localeCompare(b)):[]}
+const baseName=p=>p.split('/').filter(Boolean).pop()||'/';
+
+/* ================= UI helpers ================= */
+function toast(msg){const t=el('div','toast',esc(msg));$('#toasts').append(t);setTimeout(()=>t.remove(),3200)}
+function ask(title,label,def=''){return new Promise(res=>{const d=el('div','dlg');const b=el('div','','<b></b><label class="muted"></label><input type="text"><div class="row"><button class="btn c">Cancel</button><button class="btn pri ok">OK</button></div>');b.firstChild.textContent=title;b.children[1].textContent=label;const i=b.children[2];i.value=def;d.append(b);document.body.append(d);i.focus();i.select();const done=v=>{d.remove();res(v)};b.querySelector('.ok').onclick=()=>done(i.value.trim()||null);b.querySelector('.c').onclick=()=>done(null);i.onkeydown=e=>{if(e.key==='Enter')done(i.value.trim()||null);if(e.key==='Escape')done(null)}})}
+function confirmBox(title,msg){return new Promise(res=>{const d=el('div','dlg');const b=el('div','','<b></b><span class="muted"></span><div class="row"><button class="btn c">Cancel</button><button class="btn pri ok">Confirm</button></div>');b.firstChild.textContent=title;b.children[1].textContent=msg;d.append(b);document.body.append(d);b.querySelector('.ok').focus();b.querySelector('.ok').onclick=()=>{d.remove();res(true)};b.querySelector('.c').onclick=()=>{d.remove();res(false)}})}
+let ctxEl=null;
+function ctxMenu(x,y,items){closeCtx();const m=el('div','ctx');items.forEach(it=>{if(it==='-'){m.append(el('hr'));return}const b=el('button','',esc(it[0]));b.onclick=()=>{closeCtx();it[1]()};m.append(b)});document.body.append(m);const r=m.getBoundingClientRect();m.style.left=Math.min(x,innerWidth-r.width-6)+'px';m.style.top=Math.min(y,innerHeight-r.height-6)+'px';ctxEl=m}
+function closeCtx(){if(ctxEl){ctxEl.remove();ctxEl=null}}
+addEventListener('pointerdown',e=>{if(ctxEl&&!ctxEl.contains(e.target))closeCtx();const m=$('#menu');if(!m.hidden&&!m.contains(e.target)&&e.target.id!=='appsbtn')m.hidden=true},true);
+const GL={terminal:['>_','#1f6feb,#0b3d91'],files:['▤','#e0a526,#8a5a00'],editor:['✎','#3fb68b,#146c4d'],portfolio:['◉','#8b5cf6,#4c1d95'],software:['⬇','#f0546a,#8f1230'],settings:['⚙','#8a97ad,#3a475e'],monitor:['▁▃▅','#18b6c9,#0b5a66'],calc:['±','#f59e0b,#92400e'],snake:['∿','#22c55e,#14532d'],hash:['#','#6366f1,#312e81'],cipher:['⚿','#d946ef,#701a75'],pass:['✱','#ef4444,#7f1d1d'],sniffer:['☰','#06b6d4,#164e63'],scanner:['◎','#2dd4bf,#134e4a'],matrix:['01','#16a34a,#052e16'],doc:['≣','#64748b,#1e293b'],folder:['▤','#e0a526,#8a5a00']};
+const ICMAP={calculator:'calc',hashlab:'hash',cipherlab:'cipher',passaudit:'pass',zenscan:'scanner',cmatrix:'matrix'};
+function icon(k,sm){const g=GL[k]||GL[ICMAP[k]]||GL.doc;const d=el('div','ic'+(sm?' sm':''),esc(g[0]));d.style.background='linear-gradient(145deg,'+g[1].split(',')[0]+','+g[1].split(',')[1]+')';return d}
+/* ================= window manager ================= */
+const wins=[];let zTop=20,focused=null,cascade=0,pidN=1200;
+const small=()=>innerWidth<720;
+function openWindow(o){
+  const w=el('div','win');const id='w'+(++pidN);
+  w.innerHTML='<div class="tb"><span class="wi"></span><span class="wt"></span><div class="wc"><button class="mn" aria-label="Minimize">&#8211;</button><button class="mx" aria-label="Maximize">&#9633;</button><button class="x" aria-label="Close">&#10005;</button></div></div><div class="wb"></div><div class="rz"></div>';
+  const win={id,pid:pidN,el:w,app:o.app,title:o.title,icon:o.icon,onclose:[],hooks:[]};
+  w.querySelector('.wi').append(icon(o.icon||'doc',true));w.querySelector('.wt').textContent=o.title;
+  const body=w.querySelector('.wb');
+  const W=Math.min(o.w||640,innerWidth-16),H=Math.min(o.h||420,innerHeight-130);
+  w.style.width=W+'px';w.style.height=H+'px';
+  const off=(cascade++%7)*28;w.style.left=Math.max(6,Math.min(o.x??(innerWidth-W)/2-60+off,innerWidth-W-6))+'px';w.style.top=Math.max(40,Math.min(o.y??50+off,innerHeight-H-80))+'px';
+  $('#wins').append(w);wins.push(win);
+  win.setTitle=t=>{win.title=t;w.querySelector('.wt').textContent=t;renderTasks()};
+  win.focus=()=>{if(win.min){win.min=false;w.classList.remove('hid')}focused=win;w.style.zIndex=++zTop;wins.forEach(x=>x.el.classList.toggle('foc',x===win));renderTasks();(win.focusHook||(()=>{}))()};
+  win.minimize=()=>{win.min=true;w.classList.add('hid');if(focused===win)focused=null;renderTasks()};
+  win.toggleMax=()=>{if(small())return;w.classList.toggle('max')};
+  win.close=()=>{win.onclose.forEach(f=>{try{f()}catch(e){}});w.remove();wins.splice(wins.indexOf(win),1);if(focused===win)focused=null;renderTasks()};
+  w.querySelector('.mn').onclick=win.minimize;w.querySelector('.mx').onclick=win.toggleMax;w.querySelector('.x').onclick=win.close;
+  w.addEventListener('pointerdown',()=>win.focus(),true);
+  const tb=w.querySelector('.tb');tb.ondblclick=win.toggleMax;
+  tb.addEventListener('pointerdown',e=>{if(e.target.closest('.wc')||small()||w.classList.contains('max'))return;const sx=e.clientX-w.offsetLeft,sy=e.clientY-w.offsetTop;tb.setPointerCapture(e.pointerId);const mv=ev=>{w.style.left=clamp(ev.clientX-sx,-w.offsetWidth+80,innerWidth-80)+'px';w.style.top=clamp(ev.clientY-sy,34,innerHeight-60)+'px'};const up=()=>{tb.removeEventListener('pointermove',mv);tb.removeEventListener('pointerup',up)};tb.addEventListener('pointermove',mv);tb.addEventListener('pointerup',up)});
+  const rz=w.querySelector('.rz');rz.addEventListener('pointerdown',e=>{e.preventDefault();rz.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY,sw=w.offsetWidth,sh=w.offsetHeight;const mv=ev=>{w.style.width=Math.max(260,sw+ev.clientX-sx)+'px';w.style.height=Math.max(160,sh+ev.clientY-sy)+'px';(win.resize||(()=>{}))()};const up=()=>{rz.removeEventListener('pointermove',mv);rz.removeEventListener('pointerup',up)};rz.addEventListener('pointermove',mv);rz.addEventListener('pointerup',up)});
+  if(small()||o.max)w.classList.add('max');
+  win.body=body;
+  if(o.build)o.build(win,body);
+  win.focus();return win;
+}
+function renderTasks(){const t=$('#tasks');t.innerHTML='';wins.forEach(w=>{const b=el('button','task'+(w===focused?' act':'')+(w.min?' min':''));b.textContent=w.title;b.onclick=()=>{if(w===focused&&!w.min)w.minimize();else w.focus()};t.append(b)});renderDock()}
+const winsOf=a=>wins.filter(w=>w.app===a);
+
+/* ================= app registry ================= */
+const APPS={};   // id -> {name,cat,desc,glyph,sys,open(args)}
+const isInstalled=id=>APPS[id]&&(APPS[id].sys||settings.installed.includes(id));
+function launch(id,args){const a=APPS[id];if(!a)return null;if(!isInstalled(id)){toast(a.name+' is not installed. Open Software to get it.');return null}const ex=a.single&&winsOf(id)[0];if(ex){ex.focus();return ex}return a.open(args)}
+function reg(id,name,cat,desc,sys,single,open){APPS[id]={id,name,cat,desc,sys,single,open}}
+
+/* ================= panel, menu, dock, desktop ================= */
+const PINNED=['terminal','files','portfolio','editor','software','settings'];
+function renderDock(){const d=$('#dock');d.innerHTML='';const ids=[...PINNED,...settings.installed.filter(i=>APPS[i]&&!PINNED.includes(i))];ids.forEach(id=>{const a=APPS[id];const b=el('button','dk'+(winsOf(id).length?' run':''));b.title=a.name;b.setAttribute('aria-label',a.name);b.append(icon(id));b.onclick=()=>{const o=winsOf(id)[0];if(o&&a.single!==false&&(o===focused&&!o.min&&id!=='terminal'))o.minimize();else if(o&&id!=='terminal')o.focus();else launch(id)};d.append(b)})}
+function renderMenu(q=''){const l=$('#mlist');l.innerHTML='';q=q.toLowerCase();const cats={};Object.values(APPS).filter(a=>isInstalled(a.id)&&(!q||a.name.toLowerCase().includes(q)||a.cat.toLowerCase().includes(q))).forEach(a=>(cats[a.cat]=cats[a.cat]||[]).push(a));Object.keys(cats).sort().forEach(c=>{l.append(el('div','mh',esc(c)));cats[c].forEach(a=>{const b=el('button','mi');b.append(icon(a.id,true));b.append(el('div','',esc(a.name)+'<small>'+esc(a.desc)+'</small>'));b.onclick=()=>{$('#menu').hidden=true;launch(a.id)};l.append(b)})});const pw=el('button','mi','<span class="ic sm" style="background:#7f1d1d">&#9211;</span><div>Log out / Restart<small>Replay boot sequence</small></div>');pw.onclick=()=>{$('#menu').hidden=true;restartOS()};l.append(el('div','mh','Session'),pw)}
+$('#appsbtn').onclick=()=>{const m=$('#menu');if(m.hidden){m.innerHTML='<input id="msearch" placeholder="Search applications..." autocomplete="off"><div id="mlist"></div>';m.hidden=false;renderMenu();$('#msearch').oninput=e=>renderMenu(e.target.value);$('#msearch').focus()}else m.hidden=true};
+$('#userbtn').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();ctxMenu(r.right-180,r.bottom+4,[['Open Terminal',()=>launch('terminal')],['Settings',()=>launch('settings')],'-',['Restart (replay intro)',restartOS],['Power off',powerOff]])};
+function tick(){const d=new Date();$('#clock').textContent=d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:!settings.h24})+'  '+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}
+setInterval(tick,5000);
+function renderIcons(){const c=$('#icons');c.innerHTML='';const mk=(ic,label,open,ctx)=>{const b=el('button','dicon');b.append(icon(ic));b.append(el('span','',esc(label)));b.ondblclick=open;let last=0;b.addEventListener('click',()=>{c.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(small()||Date.now()-last<400)open();last=Date.now()});if(ctx)b.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();ctxMenu(e.clientX,e.clientY,ctx)};c.append(b)};
+ mk('portfolio','Portfolio',()=>launch('portfolio'));mk('terminal','Terminal',()=>launch('terminal'));mk('files','Files',()=>launch('files',{path:'/home/kali'}));
+ listDir('/home/kali/Desktop').forEach(n=>{const p='/home/kali/Desktop/'+n,isD=node(p).t==='d';mk(isD?'folder':'doc',n,()=>isD?launch('files',{path:p}):launch('editor',{path:p}),[['Open',()=>isD?launch('files',{path:p}):launch('editor',{path:p})],['Delete',()=>{removePath(p)}]])})}
+window.addEventListener('fschange',renderIcons);
+$('#os').addEventListener('contextmenu',e=>{if(e.target.closest('.win,.dicon,#dock,#top'))return;e.preventDefault();ctxMenu(e.clientX,e.clientY,[['New Folder',async()=>{const n=await ask('New folder','Name','New Folder');if(n)mkdir('/home/kali/Desktop/'+n)}],['New Text File',async()=>{const n=await ask('New file','Name','notes.txt');if(n)writeFile('/home/kali/Desktop/'+n,'')}],'-',['Open Terminal',()=>launch('terminal')],['Change Wallpaper',()=>{settings.wp=(settings.wp+1)%4;saveSettings();applyWall()}],['Refresh',renderIcons]])});
+$('#os').addEventListener('pointerdown',e=>{if(e.target.id==='wall'||e.target.id==='icons')document.querySelectorAll('.dicon.sel').forEach(x=>x.classList.remove('sel'))});
+addEventListener('keydown',e=>{if(e.altKey&&(e.key==='t'||e.key==='T')&&$('#os').classList.contains('on')){e.preventDefault();launch('terminal')}if(e.key==='Escape'){$('#menu').hidden=true;closeCtx()}});
+/* ================= lab network (simulated targets) ================= */
+const HOSTS={
+ '10.10.14.7':{name:'portfolio.lab',os:'Linux 6.1 - 6.8 (Debian)',mac:'52:54:00:A1:07:07',lat:.00042,ports:[[22,'ssh','OpenSSH 9.6p1 Debian 3'],[80,'http','nginx 1.24.0 (redirect to HTTPS)'],[443,'ssl/http','nginx 1.24.0'],[3000,'http','Node.js Express framework']],title:'Portfolio'},
+ '10.10.14.20':{name:'vuln-lab.lab',os:'Linux 5.15 (Ubuntu 22.04)',mac:'52:54:00:B2:14:20',lat:.00061,ports:[[21,'ftp','vsftpd 3.0.5 (anonymous login allowed)'],[22,'ssh','OpenSSH 8.9p1 Ubuntu'],[80,'http','Apache httpd 2.4.58 (training web app)'],[3306,'mysql','MariaDB 10.11.6']],title:'Training App - Login'},
+ '10.10.14.1':{name:'gateway.lab',os:'Linux 4.x (embedded)',mac:'52:54:00:C3:00:01',lat:.00021,ports:[[53,'domain','dnsmasq 2.90'],[80,'http','lighttpd 1.4.74']],title:'Gateway Admin'},
+ '127.0.0.1':{name:'localhost',os:'Linux (this machine)',mac:'00:00:00:00:00:00',lat:.00005,ports:[[631,'ipp','CUPS 2.4']],title:'CUPS'}
+};
+function resolveHost(t){t=t.replace(/^[a-z]+:\/\//,'').split('/')[0].split(':')[0];if(t==='localhost')t='127.0.0.1';for(const[ip,h]of Object.entries(HOSTS))if(ip===t||h.name===t)return[ip,h];return null}
+const OUT_SCOPE=t=>`${C.y}[!] ${t} is outside the authorized lab scope (10.10.14.0/24, 127.0.0.1).${C.x}\n${C.d}    Only scan systems you own or have written permission to test. Targets here are simulated.${C.x}\n`;
+async function nmapRun(a,io,T){
+  const flags=a.filter(x=>x[0]==='-'),vals=a.filter(x=>x[0]!=='-');const has=f=>flags.includes(f)||flags.some(x=>x[0]==='-'&&x[1]!=='-'&&x.length>2&&x.slice(1).includes(f.slice(1))&&f.length===2);
+  const target=vals[vals.length-1];const pi=a.indexOf('-p');const pspec=pi>=0?a[pi+1]:null;
+  if(!target){io.w('Nmap 7.95 ( https://nmap.org )\nUsage: nmap [Scan Type(s)] [Options] {target}\n  -sV version detection   -sC default scripts   -A aggressive   -p- all ports   -p 22,80   -sn ping sweep\n');return 0}
+  io.w(`Starting Nmap 7.95 ( https://nmap.org ) at ${new Date().toISOString().slice(0,16).replace('T',' ')} IST\n`);await wait(500);
+  if(/\/24$/.test(target)||has('-sn')&&/\/\d+$/.test(target)){if(!target.startsWith('10.10.14.')){io.w(OUT_SCOPE(target));return 1}
+    for(const[ip,h]of Object.entries(HOSTS)){if(ip==='127.0.0.1')continue;await wait(250);io.w(`Nmap scan report for ${h.name} (${ip})\nHost is up (${h.lat.toFixed(5)}s latency).\nMAC Address: ${h.mac} (QEMU virtual NIC)\n`)}
+    io.w(`Nmap done: 256 IP addresses (3 hosts up) scanned in 2.41 seconds\n`);return 0}
+  const r=resolveHost(target);if(!r){io.w(OUT_SCOPE(target));return 1}
+  const[ip,h]=r;const ver=has('-sV')||has('-A')||has('-sC'),scripts=has('-sC')||has('-A');
+  if(has('-sn')){io.w(`Nmap scan report for ${h.name} (${ip})\nHost is up (${h.lat.toFixed(5)}s latency).\nNmap done: 1 IP address (1 host up) scanned in 0.12 seconds\n`);return 0}
+  let ports=h.ports;if(pspec&&pspec!=='-'){const want=pspec.split(',').flatMap(s=>{if(s.includes('-')){const[x,y]=s.split('-').map(Number);return Array.from({length:Math.min(y-x+1,2000)},(_,i)=>x+i)}return[+s]});ports=ports.filter(p=>want.includes(p[0]))}
+  const total=a.includes('-p-')||pspec==='-'?65535:(pspec?pspec.split(',').length:1000);
+  io.w(`Nmap scan report for ${h.name} (${ip})\nHost is up (${h.lat.toFixed(5)}s latency).\n`);
+  io.w(`${C.d}Not shown: ${total-ports.length} closed tcp ports (reset)${C.x}\n`);
+  io.w(`${C.B}${pad('PORT',9)}${pad('STATE',6)} ${pad('SERVICE',10)}${ver?'VERSION':''}${C.x}\n`);
+  for(const p of ports){await wait(300);if(T.abort){io.w('\n');return 130}io.w(`${C.c}${pad(p[0]+'/tcp',9)}${C.g}${pad('open',6)}${C.x} ${pad(p[1],10)}${ver?p[2]:''}\n`);
+    if(scripts&&p[1].includes('http'))io.w(`${C.d}|_http-title: ${h.title}\n${p[0]===443||p[1]==='ssl/http'?'| ssl-cert: Subject: commonName='+h.name+'\n|_ Not valid after: 2027-01-12\n':''}${C.x}`);
+    if(scripts&&p[1]==='ftp')io.w(`${C.d}|_ftp-anon: Anonymous FTP login allowed (FTP code 230)${C.x}\n`);
+    if(scripts&&p[1]==='ssh')io.w(`${C.d}| ssh-hostkey: 256 ed25519 (a1:7c:..:3e)${C.x}\n`)}
+  if(has('-A')||has('-O'))io.w(`MAC Address: ${h.mac} (QEMU virtual NIC)\nOS details: ${h.os}\n`);
+  io.w(`\nService detection performed. Please report any incorrect results.\nNmap done: 1 IP address (1 host up) scanned in ${(2+Math.random()*9).toFixed(2)} seconds\n`);return 0}
+/* shared with the Network Scanner GUI */
+window.__nmap=nmapRun;
+
+/* ================= shell ================= */
+function tokenize(s,env){const toks=[];let cur='',has=false,q=null;const push=()=>{if(has)toks.push(cur.replace(/\$\{?(\w+)\}?/g,(m,n)=>env[n]??'').replace(/\u0001/g,'$'));cur='';has=false};
+ for(let i=0;i<s.length;i++){const c=s[i];
+  if(q){if(c===q)q=null;else if(c==='\\'&&q==='"'&&i+1<s.length)cur+=s[++i];else cur+=(q==="'"&&c==='$')?'\u0001':c;continue}
+  if(c==='"'||c==="'"){q=c;has=true;continue}
+  if(c==='\\'&&i+1<s.length){cur+=s[++i];has=true;continue}
+  if(/\s/.test(c)){push();continue}
+  if(c==='|'){push();toks.push({op:'|'});continue}
+  if(c===';'){push();toks.push({op:';'});continue}
+  if(c==='&'&&s[i+1]==='&'){push();toks.push({op:'&&'});i++;continue}
+  if(c==='>'){push();if(s[i+1]==='>'){toks.push({op:'>>'});i++}else toks.push({op:'>'});continue}
+  cur+=c;has=true}
+ if(q)throw new Error('unterminated quote');push();return toks}
+async function execLine(line,T){let toks;try{toks=tokenize(line,T.env)}catch(e){T.write(`${C.r}zsh: parse error: ${e.message}${C.x}\n`);return 2}
+ const segs=[];let cur=[],sep=';';for(const t of toks){if(typeof t==='object'&&(t.op===';'||t.op==='&&')){segs.push({toks:cur,sep});cur=[];sep=t.op}else cur.push(t)}segs.push({toks:cur,sep});
+ let code=0;for(const s of segs){if(s.sep==='&&'&&code!==0)continue;if(!s.toks.length)continue;T.abort=false;code=await runPipeline(s.toks,T)}return code}
+async function runPipeline(toks,T){const stages=[[]];for(const t of toks){if(typeof t==='object'&&t.op==='|')stages.push([]);else stages[stages.length-1].push(t)}
+ let input=null,code=0;
+ for(let i=0;i<stages.length;i++){const args=[];let redir=null;const st=stages[i];for(let j=0;j<st.length;j++){const t=st[j];if(typeof t==='object'&&(t.op==='>'||t.op==='>>'))redir={op:t.op,file:st[++j]};else if(typeof t==='string')args.push(t)}
+  if(!args.length)continue;let buf='';const toTerm=i===stages.length-1&&!redir;
+  const io={in:input,sudo:false,w:s=>{if(toTerm)T.write(s);else buf+=s}};
+  try{code=await runCmd(args,io,T)}catch(e){io.w(`${C.r}error: ${esc(e.message||e)}${C.x}\n`);code=1}
+  if(redir){if(typeof redir.file!=='string')T.write(`${C.r}zsh: parse error near \`>'${C.x}\n`);else if(!writeFile(norm(redir.file,T.cwd),stripAnsi(buf),redir.op==='>>'))T.write(`${C.r}zsh: cannot write to ${esc(redir.file)}${C.x}\n`)}
+  input=stripAnsi(buf)}
+ return code||0}
+async function runCmd(args,io,T){
+ if(/^[A-Za-z_]\w*=/.test(args[0])&&args.length===1){const[k,...v]=args[0].split('=');T.env[k]=v.join('=');return 0}
+ if(args[0]==='sudo'){io.sudo=true;args=args.slice(1).filter((x,i)=>!(i===0&&(x==='-i'||x==='-s')));if(!args.length)return 0}
+ const name=args[0],a=args.slice(1);const ALIAS={ll:['ls','-la'],la:['ls','-a'],l:['ls','-l'],'apt-get':['apt'],dir:['ls'],fastfetch:['neofetch'],vi:['nano'],vim:['nano'],mousepad:['nano'],gedit:['nano'],ifconfig:['ip','a'],ss:['netstat'],nslookup:['dig'],more:['cat'],less:['cat']};
+ if(ALIAS[name])return runCmd([...ALIAS[name],...a],io,T);
+ if(CMDS[name])return await CMDS[name](a,io,T)??0;
+ if(APPS[name]){if(!isInstalled(name)){io.w(`${C.r}zsh: command not found: ${esc(name)}${C.x}\n${C.d}Try: sudo apt install ${name}${C.x}\n`);return 127}launch(name);io.w(`${C.d}launching ${APPS[name].name}...${C.x}\n`);return 0}
+ const p=name.startsWith('./')||name.startsWith('/')?norm(name,T.cwd):null;if(p&&node(p)&&node(p).t==='f'){const n=node(p);if(/^#!.*sh/.test(n.d)){for(const ln of n.d.split('\n').slice(1))if(ln.trim()&&ln[0]!=='#')await execLine(ln,T);return 0}io.w(`${C.r}zsh: permission denied: ${esc(name)}${C.x}\n`);return 126}
+ io.w(`${C.r}zsh: command not found: ${esc(name)}${C.x}\n`);return 127}
+const need=(io,m)=>{io.w(`${C.r}${m}${C.x}\n`);return 1};
+const readInput=(a,io,T)=>{const fs_=a.filter(x=>x[0]!=='-');if(!fs_.length)return io.in??'';return fs_.map(f=>{const n=node(norm(f,T.cwd));return n&&n.t==='f'?n.d:null}).filter(x=>x!==null).join('')};
+async function digest(alg,s){const b=await crypto.subtle.digest(alg,new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const lsLine=(n,name)=>{const d=n.t==='d';const sz=d?4096:n.d.length;return`${d?'drwxr-xr-x':'-rw-r--r--'} 1 kali kali ${String(sz).padStart(6)} Oct 13 11:59 ${d?C.B+C.b+name+C.x:name}`};
+const CMDS={
+ help(a,io){io.w(`${C.B}KaliFolio shell${C.x} ${C.d}(simulated zsh; filesystem persists in your browser)${C.x}\n\n${C.c}Files${C.x}     ls cd pwd cat echo mkdir touch rm mv cp tree find grep head tail wc sort uniq nano open\n${C.c}System${C.x}    neofetch uname whoami id date uptime ps top kill free df env export history clear reboot poweroff\n${C.c}Network${C.x}   ip ping traceroute netstat dig whois curl wget ssh\n${C.c}Pentest${C.x}   nmap nikto gobuster lynis ufw ${C.d}(lab targets only)${C.x}  ethics  scope\n${C.c}Crypto${C.x}    sha1sum sha256sum sha512sum base64 rot13 hashid calc\n${C.c}Apps${C.x}      apt update | apt install <app> | apt list | apt search <q>   or just type an app name\n\n${C.d}Tips: Tab completes, ↑/↓ history, Ctrl+C aborts, pipes (|) and redirects (> >>) work.${C.x}\n`)},
+ clear(a,io,T){T.clear()},
+ pwd(a,io,T){io.w(T.cwd+'\n')},
+ cd(a,io,T){const p=norm(a[0]||'~',T.cwd),n=node(p);if(!n)return need(io,`cd: no such file or directory: ${esc(a[0])}`);if(n.t!=='d')return need(io,`cd: not a directory: ${esc(a[0])}`);T.cwd=p},
+ ls(a,io,T){const fl=a.filter(x=>x[0]==='-').join(''),paths=a.filter(x=>x[0]!=='-');const all=fl.includes('a'),lg=fl.includes('l');let code=0;
+  for(const q of paths.length?paths:['.']){const p=norm(q,T.cwd),n=node(p);if(!n){io.w(`${C.r}ls: cannot access '${esc(q)}': No such file or directory${C.x}\n`);code=2;continue}
+   if(paths.length>1)io.w(q+':\n');if(n.t==='f'){io.w(q+'\n');continue}
+   let names=Object.keys(n.c).sort();if(!all)names=names.filter(x=>x[0]!=='.');
+   if(lg){io.w(`total ${names.length*4}\n`);names.forEach(x=>io.w(lsLine(n.c[x],x)+'\n'))}else io.w(names.map(x=>n.c[x].t==='d'?C.B+C.b+x+C.x:x).join('  ')+(names.length?'\n':''))}return code},
+ cat(a,io,T){if(!a.length&&io.in!=null){io.w(io.in);return}let code=0;for(const f of a){const n=node(norm(f,T.cwd));if(!n){io.w(`${C.r}cat: ${esc(f)}: No such file or directory${C.x}\n`);code=1}else if(n.t==='d'){io.w(`${C.r}cat: ${esc(f)}: Is a directory${C.x}\n`);code=1}else io.w(n.d)}return code},
+ echo(a,io){let nl=true;if(a[0]==='-n'){nl=false;a=a.slice(1)}io.w(a.join(' ')+(nl?'\n':''))},
+ mkdir(a,io,T){const deep=a.includes('-p');for(const f of a.filter(x=>x[0]!=='-'))if(!mkdir(norm(f,T.cwd),deep))return need(io,`mkdir: cannot create directory '${esc(f)}'`)},
+ touch(a,io,T){for(const f of a){const p=norm(f,T.cwd);if(!node(p))if(!writeFile(p,''))return need(io,`touch: cannot touch '${esc(f)}'`)}},
+ rm(a,io,T){const rec=a.some(x=>/^-.*r/i.test(x));for(const f of a.filter(x=>x[0]!=='-')){const p=norm(f,T.cwd),n=node(p);if(p==='/'||p==='/home')return need(io,'rm: refusing to remove protected directory');if(!n){if(!a.some(x=>/^-.*f/.test(x)))return need(io,`rm: cannot remove '${esc(f)}': No such file or directory`);continue}if(n.t==='d'&&!rec)return need(io,`rm: cannot remove '${esc(f)}': Is a directory`);removePath(p)}},
+ rmdir(a,io,T){for(const f of a){const p=norm(f,T.cwd),n=node(p);if(!n||n.t!=='d')return need(io,`rmdir: failed to remove '${esc(f)}'`);if(Object.keys(n.c).length)return need(io,`rmdir: failed to remove '${esc(f)}': Directory not empty`);removePath(p)}},
+ mv(a,io,T){const[s,d]=a.filter(x=>x[0]!=='-');if(!s||!d)return need(io,'mv: missing operand');const sp=norm(s,T.cwd),n=node(sp);if(!n)return need(io,`mv: cannot stat '${esc(s)}'`);let dp=norm(d,T.cwd);const dn=node(dp);if(dn&&dn.t==='d')dp+='/'+baseName(sp);const[par,nm]=split(dp);if(!par)return need(io,'mv: cannot move');par.c[nm]=n;removePath(sp);saveFS()},
+ cp(a,io,T){const[s,d]=a.filter(x=>x[0]!=='-');if(!s||!d)return need(io,'cp: missing operand');const sp=norm(s,T.cwd),n=node(sp);if(!n)return need(io,`cp: cannot stat '${esc(s)}'`);let dp=norm(d,T.cwd);const dn=node(dp);if(dn&&dn.t==='d')dp+='/'+baseName(sp);const[par,nm]=split(dp);if(!par)return need(io,'cp: cannot copy');par.c[nm]=copyNode(n);saveFS()},
+ tree(a,io,T){const root=norm(a[0]||'.',T.cwd);const walk=(p,pre)=>{const n=node(p);const ks=Object.keys(n.c).filter(k=>k[0]!=='.').sort();ks.forEach((k,i)=>{const last=i===ks.length-1,c=n.c[k];io.w(pre+(last?'└── ':'├── ')+(c.t==='d'?C.B+C.b+k+C.x:k)+'\n');if(c.t==='d')walk(p+(p==='/'?'':'/')+k,pre+(last?'    ':'│   '))})};if(!node(root))return need(io,'tree: no such directory');io.w(root+'\n');walk(root,'')},
+ find(a,io,T){const start=norm(a[0]&&a[0][0]!=='-'?a[0]:'.',T.cwd);const ni=a.indexOf('-name');const pat=ni>=0?new RegExp('^'+a[ni+1].replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.')+'$'):null;const walk=(p)=>{const n=node(p);if(!pat||pat.test(baseName(p)))io.w(p+'\n');if(n.t==='d')Object.keys(n.c).sort().forEach(k=>walk(p+(p==='/'?'':'/')+k))};if(!node(start))return need(io,'find: no such path');walk(start)},
+ grep(a,io,T){const fl=a.filter(x=>x[0]==='-').join(''),r=a.filter(x=>x[0]!=='-');const pat=r.shift();if(!pat)return need(io,'usage: grep [-inv] pattern [file...]');let re;try{re=new RegExp(pat,fl.includes('i')?'i':'')}catch(e){re=new RegExp(pat.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),fl.includes('i')?'i':'')}let found=0;const scan=(txt,label)=>txt.split('\n').forEach((ln,i)=>{if(ln===''&&i===txt.split('\n').length-1)return;if(re.test(ln)!==fl.includes('v')){found++;io.w((label?C.m+label+C.x+':':'')+(fl.includes('n')?C.g+(i+1)+C.x+':':'')+ln.replace(re,m=>fl.includes('v')?m:C.r+C.B+m+C.x)+'\n')}});if(r.length)r.forEach(f=>{const n=node(norm(f,T.cwd));if(n&&n.t==='f')scan(n.d,r.length>1?f:'');else io.w(`${C.r}grep: ${esc(f)}: No such file${C.x}\n`)});else scan(io.in??'');return found?0:1},
+ head(a,io,T){const ni=a.indexOf('-n');const n=ni>=0?+a[ni+1]:10;const t=readInput(a.filter((x,i)=>x[0]!=='-'&&(ni<0||i!==ni+1)),io,T);io.w(t.split('\n').slice(0,n).join('\n')+'\n')},
+ tail(a,io,T){const ni=a.indexOf('-n');const n=ni>=0?+a[ni+1]:10;const t=readInput(a.filter((x,i)=>x[0]!=='-'&&(ni<0||i!==ni+1)),io,T).replace(/\n$/,'');io.w(t.split('\n').slice(-n).join('\n')+'\n')},
+ wc(a,io,T){const t=readInput(a,io,T);const l=(t.match(/\n/g)||[]).length,w=(t.trim()?t.trim().split(/\s+/).length:0),c=t.length;io.w(a.includes('-l')?l+'\n':a.includes('-w')?w+'\n':a.includes('-c')?c+'\n':`${l} ${w} ${c}\n`)},
+ sort(a,io,T){const l=readInput(a,io,T).replace(/\n$/,'').split('\n').sort();if(a.includes('-r'))l.reverse();io.w(l.join('\n')+'\n')},
+ uniq(a,io,T){const l=readInput(a,io,T).replace(/\n$/,'').split('\n');io.w(l.filter((x,i)=>x!==l[i-1]).join('\n')+'\n')},
+ which(a,io){for(const n of a)io.w((CMDS[n]||APPS[n])?'/usr/bin/'+n+'\n':n+' not found\n')},
+ whoami(a,io,T){io.w((T.root?'root':'kali')+'\n')},
+ id(a,io){io.w('uid=1000(kali) gid=1000(kali) groups=1000(kali),27(sudo),100(users)\n')},
+ hostname(a,io){io.w('kali\n')},
+ uname(a,io){io.w(a.includes('-a')?'Linux kali 6.12.0-kalifolio #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux\n':'Linux\n')},
+ date(a,io){io.w(new Date().toString()+'\n')},
+ uptime(a,io){const m=Math.floor((Date.now()-BOOT)/60000);io.w(` ${new Date().toTimeString().slice(0,8)} up ${m} min,  1 user,  load average: 0.${10+wins.length*7}, 0.09, 0.05\n`)},
+ history(a,io,T){T.hist.forEach((h,i)=>io.w(String(i+1).padStart(4)+'  '+h+'\n'))},
+ env(a,io,T){Object.entries(T.env).forEach(([k,v])=>io.w(k+'='+v+'\n'))},
+ export(a,io,T){for(const x of a){const[k,...v]=x.split('=');if(k)T.env[k]=v.join('=')}},
+ sleep(a,io,T){return wait(Math.min(+a[0]||1,10)*1000)},
+ exit(a,io,T){T.win.close()},
+ reboot(){restartOS()},poweroff(){powerOff()},shutdown(){powerOff()},
+ su(a,io,T){T.root=true;T.setPrompt()},
+ true(){},false(){return 1},
+ nano(a,io,T){const p=norm(a[0]||'untitled.txt',T.cwd);if(!node(p))writeFile(p,'');launch('editor',{path:p});io.w(`${C.d}opened ${esc(p)} in the text editor${C.x}\n`)},
+ open(a,io,T){const x=a[0];if(!x)return need(io,'usage: open <app|file|folder>');if(APPS[x]){launch(x);return}const p=norm(x,T.cwd),n=node(p);if(!n)return need(io,`open: ${esc(x)}: not found`);n.t==='d'?launch('files',{path:p}):launch('editor',{path:p})},
+ neofetch(a,io){const up=Math.floor((Date.now()-BOOT)/60000);io.w(`${C.b}   ,.,;,.        ${C.c}kali${C.x}@${C.c}kali${C.x}\n${C.b}  ;;;;;;;;;      ${C.x}-----------\n${C.b} ;;'    ';;     ${C.c}OS${C.x}: KaliFolio OS (Kali-inspired) x86_64\n${C.b} ;;  ${C.w}()${C.b}  ;;     ${C.c}Kernel${C.x}: 6.12.0-kalifolio\n${C.b}  ;;;  ;;;      ${C.c}Uptime${C.x}: ${up} mins\n${C.b}   ';;;;'       ${C.c}Shell${C.x}: zsh 5.9 (simulated)\n${C.b}     ;;         ${C.c}WM${C.x}: folio-wm (${wins.length} windows)\n${C.b}    ;;;;        ${C.c}Terminal${C.x}: kali-term\n${C.b}   ;;  ;;       ${C.c}Apps${C.x}: ${Object.values(APPS).filter(x=>isInstalled(x.id)).length} installed\n${C.x}                  ${C.c}Lab${C.x}: 10.10.14.0/24 (3 hosts)\n\n   \x1b[40m  \x1b[41m  \x1b[42m  \x1b[43m  \x1b[44m  \x1b[45m  \x1b[46m  \x1b[47m  ${C.x}\n`.replace(/\x1b\[4\dm/g,''))},
+ cowsay(a,io){const t=a.join(' ')||'moo';io.w(` ${'_'.repeat(t.length+2)}\n< ${t} >\n ${'-'.repeat(t.length+2)}\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||\n`)},
+ ps(a,io){io.w(`${C.B}  PID TTY          TIME CMD${C.x}\n`);io.w('    1 ?        00:00:01 systemd\n  812 ?        00:00:00 sshd\n  901 ?        00:00:03 nginx\n 1022 ?        00:00:04 node portfolio-api\n');wins.forEach(w=>io.w(String(w.pid).padStart(5)+' pts/0    00:00:0'+(w.pid%9)+' '+w.app+'\n'))},
+ top(a,io){io.w(`top - ${new Date().toTimeString().slice(0,8)} up ${Math.floor((Date.now()-BOOT)/60000)} min, load average: 0.21, 0.14, 0.09\nTasks: ${wins.length+4} total, 1 running\n%Cpu(s):  3.2 us,  1.1 sy | MiB Mem: 8192.0 total, 5120.4 free\n\n${C.B}  PID USER   %CPU %MEM COMMAND${C.x}\n`);wins.slice(0,8).forEach(w=>io.w(`${String(w.pid).padStart(5)} kali    ${(Math.random()*4).toFixed(1).padStart(4)} ${(Math.random()*2).toFixed(1).padStart(4)} ${w.app}\n`))},
+ kill(a,io){const w=wins.find(x=>String(x.pid)===a[a.length-1]);if(!w)return need(io,`kill: (${esc(a[a.length-1])}) - No such process`);w.close()},
+ free(a,io){io.w('               total        used        free\nMem:         8388608     2310144     5120400\nSwap:        2097152           0     2097152\n')},
+ df(a,io){io.w('Filesystem      Size  Used Avail Use% Mounted on\n/dev/vda1        64G   18G   43G  30% /\ntmpfs           4.0G     0  4.0G   0% /dev/shm\n')},
+ ip(a,io){io.w('1: lo: <LOOPBACK,UP> mtu 65536\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP> mtu 1500\n    link/ether 52:54:00:12:34:56\n    inet 10.10.14.2/24 brd 10.10.14.255 scope global eth0\n')},
+ netstat(a,io){io.w('Netid State  Local Address:Port   Peer Address:Port  Process\ntcp   LISTEN 0.0.0.0:22          0.0.0.0:*     sshd\ntcp   LISTEN 127.0.0.1:631       0.0.0.0:*     cupsd\ntcp   ESTAB  10.10.14.2:51514   10.10.14.7:443 firefox\n')},
+ async ping(a,io,T){const t=a.filter(x=>x[0]!=='-')[0];if(!t)return need(io,'usage: ping <host>');const r=resolveHost(t);if(!r){io.w(`ping: ${esc(t)}: Name or service not known\n`);return 2}io.w(`PING ${r[1].name} (${r[0]}) 56(84) bytes of data.\n`);let n=0;for(let i=1;i<=4;i++){await wait(550);if(T.abort)break;n++;io.w(`64 bytes from ${r[0]}: icmp_seq=${i} ttl=64 time=${(r[1].lat*1000+Math.random()*.2).toFixed(3)} ms\n`)}io.w(`\n--- ${r[1].name} ping statistics ---\n${n} packets transmitted, ${n} received, 0% packet loss\n`)},
+ async traceroute(a,io,T){const r=resolveHost(a[0]||'');if(!r)return need(io,'traceroute: unknown host (lab only)');io.w(`traceroute to ${r[1].name} (${r[0]}), 30 hops max\n`);const hops=r[0]==='10.10.14.1'?[1]:[1,2];for(let i=0;i<hops.length;i++){await wait(350);io.w(` ${i+1}  ${i===hops.length-1?r[0]:'10.10.14.1'}  ${(0.2+Math.random()).toFixed(3)} ms\n`)}},
+ nmap:(a,io,T)=>nmapRun(a,io,T),
+ async nikto(a,io,T){const hi=a.indexOf('-h');const t=hi>=0?a[hi+1]:a[0];if(!t)return need(io,'usage: nikto -h <host>');const r=resolveHost(t);if(!r){io.w(OUT_SCOPE(t));return 1}const web=r[1].ports.filter(p=>p[1].includes('http'));io.w(`- Nikto v2.5.0\n+ Target IP:   ${r[0]}\n+ Target Host: ${r[1].name}\n+ Target Port: ${web[0]?web[0][0]:80}\n`);for(const l of[`+ Server: ${(web[0]?web[0][2]:'unknown').split(' (')[0]}`,r[0]==='10.10.14.7'?'+ /: Strict-Transport-Security header is present. '+C.g+'(good)'+C.x:'+ /: The anti-clickjacking X-Frame-Options header is not present. '+C.y+'(finding)'+C.x,r[0]==='10.10.14.20'?'+ /login.php: Admin login page found. '+C.y+'(finding)'+C.x:'+ No CGI Directories found (use \'-C all\' to force check all possible dirs)',r[0]==='10.10.14.20'?'+ /config/: Directory indexing found. '+C.r+'(medium)'+C.x:'+ OPTIONS: Allowed HTTP Methods: GET, HEAD, OPTIONS']){await wait(550);if(T.abort)return 130;io.w(l+'\n')}io.w(`+ 1 host(s) tested\n${C.d}# findings are simulated for the training lab${C.x}\n`)},
+ async gobuster(a,io,T){const ui=a.indexOf('-u');const t=ui>=0?a[ui+1]:null;if(!t)return need(io,'usage: gobuster dir -u <url> -w <wordlist>');const r=resolveHost(t);if(!r){io.w(OUT_SCOPE(t));return 1}io.w(`===============================================================\nGobuster v3.6\n[+] Url:  ${t}\n[+] Wordlist: /usr/share/wordlists/common.txt\n===============================================================\n`);const found=r[0]==='10.10.14.20'?[['/admin',301],['/config',301],['/login',200],['/backup',403]]:[['/about',200],['/contact',200],['/projects',200],['/admin',403]];for(const[p,s]of found){await wait(450);if(T.abort)return 130;io.w(`${pad(p,14)}(Status: ${s===200?C.g:s===403?C.y:C.c}${s}${C.x}) [Size: ${200+Math.floor(Math.random()*4000)}]\n`)}io.w('===============================================================\nFinished\n')},
+ whois(a,io){const r=resolveHost(a[0]||'');if(!r)return need(io,'whois: lab domains only (portfolio.lab, vuln-lab.lab, gateway.lab)');io.w(`Domain Name: ${r[1].name.toUpperCase()}\nRegistrar: Local Lab Registry\nCreated: 2026-01-12\nName Server: gateway.lab\nStatus: ok\nOrg: KaliFolio Training Lab (simulated)\n`)},
+ dig(a,io){const t=a.filter(x=>x[0]!=='-'&&x[0]!=='@')[0];const r=resolveHost(t||'');io.w(`; <<>> DiG 9.20 <<>> ${esc(t||'')}\n;; QUESTION SECTION:\n;${t}.  IN  A\n\n`);if(!r)io.w(';; status: NXDOMAIN (lab resolver)\n');else io.w(`;; ANSWER SECTION:\n${r[1].name}.  300  IN  A  ${r[0]}\n\n;; SERVER: 10.10.14.1#53(gateway.lab)\n`)},
+ curl(a,io){const u=a.filter(x=>x[0]!=='-')[0];if(!u)return need(io,'usage: curl [-I] <url>');const r=resolveHost(u);if(!r){io.w(`curl: (6) Could not resolve host (only lab hosts are reachable in this simulator)\n`);return 6}if(a.includes('-I')||a.includes('-i'))io.w(`HTTP/1.1 200 OK\nServer: ${r[1].ports.find(p=>p[1].includes('http'))?.[2].split(' (')[0]||'unknown'}\nContent-Type: text/html; charset=utf-8\nStrict-Transport-Security: max-age=31536000\nX-Content-Type-Options: nosniff\n\n`);if(!a.includes('-I'))io.w(`<!doctype html>\n<title>${r[1].title}</title>\n<h1>${r[1].title}</h1>\n`)},
+ wget(a,io,T){const u=a[0];if(!u)return need(io,'usage: wget <url>');const r=resolveHost(u);if(!r)return need(io,'wget: unable to resolve host (lab only)');const f=baseName(u.replace(/^[a-z]+:\/\//,''))||'index.html';const nm=f.includes('.')||f===r[1].name?'index.html':f;writeFile('/home/kali/Downloads/'+nm,`<title>${r[1].title}</title>\n`);io.w(`--${new Date().toTimeString().slice(0,8)}--  ${u}\nSaving to: '/home/kali/Downloads/${nm}'\n100%[===================>]  46 B  --.-KB/s    in 0s\n`)},
+ async ssh(a,io){const t=(a.filter(x=>x[0]!=='-')[0]||'').split('@').pop();const r=resolveHost(t);if(!r)return need(io,`ssh: Could not resolve hostname ${esc(t)} (lab only)`);await wait(500);io.w(`The authenticity of host '${r[1].name}' can't be established.\nED25519 key fingerprint is SHA256:Lq3...x9k.\nWarning: Permanently added to the list of known hosts.\n${C.y}Permission denied (publickey).${C.x}\n${C.d}# the simulator does not provide remote shells${C.x}\n`);return 255},
+ async lynis(a,io,T){io.w(`${C.B}[ Lynis 3.1.1 ]${C.x}\n`);for(const s of['Initializing program','Boot and services          [ '+C.g+'OK'+C.x+' ]','Kernel hardening           [ '+C.g+'OK'+C.x+' ]','SSH configuration          [ '+C.g+'OK'+C.x+' ]','Firewall (ufw)            [ '+C.g+'ENABLED'+C.x+' ]','Package updates           [ '+C.y+'2 PENDING'+C.x+' ]','Web server headers        [ '+C.g+'OK'+C.x+' ]']){await wait(420);if(T.abort)return 130;io.w(s+'\n')}io.w(`\nHardening index : ${C.g}92${C.x} [##################  ]\nTests performed : 248\nSuggestion      : Install pending updates (sudo apt upgrade)\n`)},
+ ufw(a,io){if(!io.sudo&&a[0]!=='status')return need(io,'ERROR: You need to be root to run this script (try sudo)');io.w('Status: active\n\nTo                         Action      From\n22/tcp                     LIMIT       Anywhere\n80,443/tcp                 ALLOW       Anywhere\n3000/tcp                   DENY        Anywhere\n')},
+ async sha1sum(a,io,T){return hashCmd('SHA-1',a,io,T)},async sha256sum(a,io,T){return hashCmd('SHA-256',a,io,T)},async sha512sum(a,io,T){return hashCmd('SHA-512',a,io,T)},
+ base64(a,io,T){const t=readInput(a,io,T).replace(/\n$/,'');try{if(a.includes('-d'))io.w(decodeURIComponent(escape(atob(t.trim())))+'\n');else io.w(btoa(unescape(encodeURIComponent(t)))+'\n')}catch(e){return need(io,'base64: invalid input')}},
+ rot13(a,io,T){io.w((a.length?a.join(' '):readInput([],io,T)).replace(/[a-z]/gi,c=>String.fromCharCode((c<='Z'?90:122)>=(c=c.charCodeAt(0)+13)?c:c-26)).replace(/\n?$/,'\n'))},
+ hashid(a,io){const h=(a[0]||'').trim();if(!h)return need(io,'usage: hashid <hash>');const L={32:'MD5 / NTLM',40:'SHA-1',56:'SHA-224',64:'SHA-256',96:'SHA-384',128:'SHA-512'};io.w(/^[0-9a-f]+$/i.test(h)&&L[h.length]?`Analyzing '${esc(h)}'\n[+] ${L[h.length]}\n`:'[-] No hash type matched\n')},
+ calc(a,io){const e=a.join(' ');if(!/^[0-9+\-*/().%\s^]+$/.test(e)||!e.trim())return need(io,'usage: calc 2*(3+4)');try{io.w(Function('"use strict";return ('+e.replace(/\^/g,'**')+')')()+'\n')}catch(x){return need(io,'calc: syntax error')}},
+ bc(a,io,T){return CMDS.calc(a.length?a:[readInput([],io,T)],io,T)},
+ ethics(a,io){io.w(`${C.B}Ethical hacking in five rules${C.x}\n ${C.g}1.${C.x} Get written authorization (scope, dates, contacts).\n ${C.g}2.${C.x} Stay in scope. Out-of-scope = illegal, even if "just looking".\n ${C.g}3.${C.x} Minimise impact: no DoS, no data theft, no persistence.\n ${C.g}4.${C.x} Document every step so findings are reproducible.\n ${C.g}5.${C.x} Report responsibly and help fix what you found.\n\n${C.B}Methodology (PTES-style)${C.x}: pre-engagement > recon > scanning > enumeration > analysis > reporting > retest\n${C.d}Legal practice targets: your own lab, HackTheBox, TryHackMe, DVWA, OWASP Juice Shop.${C.x}\n`)},
+ scope(a,io){io.w(node('/home/kali/Documents/scope.txt').d)},
+ man(a,io){io.w(`${C.d}No manual installed. Try '${a[0]||'cmd'} --help' or type ${C.x}help${C.d}.${C.x}\n`)},
+ async apt(a,io,T){const sub=a[0],pk=a.slice(1).filter(x=>x[0]!=='-');
+  if(sub==='update'||sub==='upgrade'||sub==='install'||sub==='remove'||sub==='purge'){if(!io.sudo&&!T.root){io.w(`${C.r}E: Could not open lock file /var/lib/dpkg/lock-frontend - open (13: Permission denied)\nE: Unable to acquire the dpkg frontend lock, are you root?${C.x}\n${C.d}Try: sudo apt ${a.join(' ')}${C.x}\n`);return 100}}
+  if(sub==='update'){for(const l of['Get:1 http://http.kali.org/kali kali-rolling InRelease [41.5 kB]','Get:2 http://http.kali.org/kali kali-rolling/main amd64 Packages [20.1 MB]','Fetched 20.2 MB in 2s (9,812 kB/s)','Reading package lists... Done']){await wait(450);io.w(l+'\n')}io.w('All packages are up to date.\n')}
+  else if(sub==='upgrade'){await wait(600);io.w('Reading package lists... Done\n0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.\n')}
+  else if(sub==='install'){if(!pk.length)return need(io,'E: No packages specified');for(const p of pk){const app=APPS[p];if(!app){if(CMDS[p]){io.w(`${p} is already the newest version.\n`);continue}io.w(`${C.r}E: Unable to locate package ${esc(p)}${C.x}\n`);return 100}if(isInstalled(p)){io.w(`${p} is already the newest version (1.0).\n`);continue}io.w(`Reading package lists... Done\nThe following NEW packages will be installed:\n  ${p}\n`);for(const l of[`Get:1 http://http.kali.org/kali kali-rolling/main ${p} 1.0 [${app.size||'1,204 kB'}]`,`Unpacking ${p} (1.0) ...`,`Setting up ${p} (1.0) ...`]){await wait(550);if(T.abort)return 130;io.w(l+'\n')}installApp(p);io.w(`${C.g}Done.${C.x} Launch with: ${C.B}${p}${C.x}\n`)}}
+  else if(sub==='remove'||sub==='purge'){for(const p of pk){if(!APPS[p]||APPS[p].sys||!settings.installed.includes(p)){io.w(`${C.y}Package '${esc(p)}' is not installed, so not removed${C.x}\n`);continue}uninstallApp(p);io.w(`Removing ${p} (1.0) ...\n`)}}
+  else if(sub==='list'){Object.values(APPS).filter(x=>a.includes('--installed')?isInstalled(x.id):!x.sys).forEach(x=>io.w(`${C.g}${pad(x.id,12)}${C.x} ${pad(x.name,20)} ${C.d}${x.desc}${isInstalled(x.id)?'  [installed]':''}${C.x}\n`))}
+  else if(sub==='search'){const q=(pk[0]||'').toLowerCase();Object.values(APPS).filter(x=>!x.sys&&(x.id.includes(q)||x.name.toLowerCase().includes(q)||x.desc.toLowerCase().includes(q))).forEach(x=>io.w(`${C.g}${x.id}${C.x} - ${x.desc}\n`))}
+  else io.w('Usage: apt update | upgrade | install <pkg> | remove <pkg> | list [--installed] | search <term>\n')}
+};
+async function hashCmd(alg,a,io,T){const fl=a.filter(x=>x[0]!=='-');if(!fl.length){io.w(await digest(alg,io.in??'')+'  -\n');return}for(const f of fl){const n=node(norm(f,T.cwd));if(!n||n.t!=='f'){io.w(`${C.r}${esc(f)}: No such file${C.x}\n`);continue}io.w(await digest(alg,n.d)+'  '+f+'\n')}}
+const BOOT=Date.now();
+function installApp(id){if(!settings.installed.includes(id)){settings.installed.push(id);saveSettings()}renderDock();toast(APPS[id].name+' installed');window.dispatchEvent(new Event('appschange'))}
+function uninstallApp(id){settings.installed=settings.installed.filter(x=>x!==id);saveSettings();winsOf(id).forEach(w=>w.close());renderDock();toast(APPS[id].name+' removed');window.dispatchEvent(new Event('appschange'))}
+
+/* ================= terminal app ================= */
+function termApp(win,box,init){
+  box.classList.add('term');const T={cwd:init&&init.cwd||'/home/kali',env:{USER:'kali',HOME:'/home/kali',SHELL:'/usr/bin/zsh',HOSTNAME:'kali',TERM:'xterm-256color',LANG:'en_US.UTF-8',PATH:'/usr/local/bin:/usr/bin:/bin'},hist:store.get('hist',[]),abort:false,win,root:false};
+  const out=el('pre','tout'),line=el('div','tline'),ps=el('div','tps'),row=el('div','trow'),sym=el('span','tsym'),inp=el('input');inp.spellcheck=false;inp.autocomplete='off';inp.autocapitalize='off';inp.setAttribute('aria-label','Terminal input');row.append(sym,inp);line.append(ps,row);box.append(out,line);
+  const ph=()=>{const d=T.cwd==='/home/kali'?'~':T.cwd.replace('/home/kali','~');return`<span class="pb">┌──(</span><span class="pu">${T.root?'root':'kali'}㉖kali</span><span class="pb">)-[</span><span class="pd">${esc(d)}</span><span class="pb">]</span>`};
+  T.setPrompt=()=>{ps.innerHTML=ph();sym.textContent=T.root?'└─# ':'└─$ '};
+  T.write=s=>{out.insertAdjacentHTML('beforeend',ansi(s));box.scrollTop=box.scrollHeight};T.clear=()=>{out.innerHTML=''};T.setPrompt();
+  let hi=T.hist.length,busy=false;
+  T.write(`${C.B}KaliFolio OS${C.x} ${C.d}2026.4 — simulated Kali-style workstation${C.x}\nType ${C.g}help${C.x} for commands, ${C.g}ethics${C.x} for the rules. Lab targets: ${C.c}portfolio.lab  vuln-lab.lab  gateway.lab${C.x}\n\n`);
+  const complete=()=>{const v=inp.value,m=v.match(/(\S*)$/),w=m[1],first=!/\s/.test(v.trim())&&v.trim()===v;let c=[];if(first)c=[...Object.keys(CMDS),...Object.keys(APPS).filter(isInstalled)].filter(x=>x.startsWith(w));else{const dir=w.includes('/')?w.slice(0,w.lastIndexOf('/')+1):'';const base=w.slice(dir.length);const n=node(norm(dir||'.',T.cwd));if(n&&n.t==='d')c=Object.keys(n.c).filter(k=>k.startsWith(base)).map(k=>dir+k+(n.c[k].t==='d'?'/':''))}
+   if(c.length===1)inp.value=v.slice(0,v.length-w.length)+c[0]+(c[0].endsWith('/')?'':' ');else if(c.length>1){out.insertAdjacentHTML('beforeend',`<div class="echo">${ph()}\n<span class="pb">└─$ </span>${esc(v)}</div>`);T.write(c.sort().join('  ')+'\n');let p=c[0];for(const x of c)while(!x.startsWith(p))p=p.slice(0,-1);if(p.length>w.length)inp.value=v.slice(0,v.length-w.length)+p}};
+  inp.addEventListener('keydown',async e=>{
+   if(e.key==='Enter'){if(busy)return;const v=inp.value;inp.value='';out.insertAdjacentHTML('beforeend',`<div class="echo">${ph()}\n<span class="pb">${T.root?'└─# ':'└─$ '}</span>${esc(v)}</div>`);if(v.trim()){if(T.hist[T.hist.length-1]!==v)T.hist.push(v);T.hist=T.hist.slice(-100);store.set('hist',T.hist)}hi=T.hist.length;if(v.trim()){busy=true;row.style.visibility='hidden';try{await execLine(v,T)}catch(x){T.write(`${C.r}${esc(x.message||x)}${C.x}\n`)}busy=false;row.style.visibility='';T.setPrompt()}inp.focus();box.scrollTop=box.scrollHeight}
+   else if(e.key==='ArrowUp'){e.preventDefault();if(hi>0)inp.value=T.hist[--hi]}
+   else if(e.key==='ArrowDown'){e.preventDefault();hi=Math.min(hi+1,T.hist.length);inp.value=T.hist[hi]||''}
+   else if(e.key==='Tab'){e.preventDefault();complete()}
+   else if(e.ctrlKey&&e.key==='c'){if(window.getSelection().toString())return;T.abort=true;T.write(`${esc(inp.value)}^C\n`);inp.value=''}
+   else if(e.ctrlKey&&e.key==='l'){e.preventDefault();T.clear()}});
+  box.addEventListener('pointerup',()=>{if(!window.getSelection().toString())inp.focus()});
+  win.focusHook=()=>setTimeout(()=>inp.focus(),0);
+  if(init&&init.cmd)execLine(init.cmd,T).then(()=>T.setPrompt());
+}
+reg('terminal','Terminal','Accessories','Command-line shell with lab tools',true,false,a=>openWindow({app:'terminal',title:'kali@kali: ~',icon:'terminal',w:700,h:430,build:(w,b)=>termApp(w,b,a)}));
+/* ================= Files ================= */
+reg('files','Files','Accessories','Browse the virtual filesystem',true,false,a=>openWindow({app:'files',title:'Files',icon:'files',w:640,h:420,build:(win,b)=>{
+  let cwd=(a&&a.path)||'/home/kali',selName=null;const hist=[];
+  b.innerHTML='<div class="app"><div class="rowf" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn up" title="Up">&#8593;</button><input class="path mono" style="flex:1;min-width:120px"><button class="btn nf">+ Folder</button><button class="btn nt">+ File</button></div><div style="display:flex;flex:1;min-height:0"><div class="side"></div><div class="files" style="flex:1;overflow:auto"></div></div><div class="muted mono st" style="padding:4px 10px;border-top:1px solid var(--line);font-size:12px"></div></div>';
+  const side=b.querySelector('.side'),grid=b.querySelector('.files'),pth=b.querySelector('.path'),st=b.querySelector('.st');
+  [['Home','/home/kali'],['Desktop','/home/kali/Desktop'],['Documents','/home/kali/Documents'],['Downloads','/home/kali/Downloads'],['Projects','/home/kali/Projects'],['/etc','/etc'],['/ (root)','/']].forEach(([n,p])=>{const x=el('button','',esc(n));x.onclick=()=>go(p);side.append(x)});
+  function go(p){const n=node(p);if(!n||n.t!=='d'){toast('Not a folder');return}cwd=p;selName=null;draw();win.setTitle('Files — '+baseName(p))}
+  function openItem(name){const p=(cwd==='/'?'':cwd)+'/'+name,n=node(p);if(n.t==='d')go(p);else launch('editor',{path:p})}
+  function draw(){pth.value=cwd;grid.innerHTML='';const names=listDir(cwd);names.forEach(nm=>{const p=(cwd==='/'?'':cwd)+'/'+nm,n=node(p);const it=el('button','fitem'+(nm===selName?' sel':''));it.append(icon(n.t==='d'?'folder':'doc'));it.firstChild.style.margin='0 auto 4px';it.append(el('div','',esc(nm)));let last=0;it.onclick=()=>{if(small()||(selName===nm&&Date.now()-last<450)){openItem(nm);return}selName=nm;last=Date.now();grid.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));it.classList.add('sel');st.textContent=nm+(n.t==='f'?'  ·  '+n.d.length+' bytes':'  ·  folder')};it.oncontextmenu=e=>{e.preventDefault();ctxMenu(e.clientX,e.clientY,[['Open',()=>openItem(nm)],['Rename',async()=>{const v=await ask('Rename','New name',nm);if(v&&!node(cwd+'/'+v)){const par=node(cwd);par.c[v]=par.c[nm];delete par.c[nm];saveFS()}}],['Delete',async()=>{if(await confirmBox('Delete '+nm+'?','This cannot be undone.')){removePath(p)}}]])};grid.append(it)});if(!names.length)grid.append(el('div','muted','This folder is empty.'));st.textContent=names.length+' items'}
+  b.querySelector('.up').onclick=()=>go(norm('..',cwd));pth.onkeydown=e=>{if(e.key==='Enter')go(norm(pth.value,'/'))};
+  b.querySelector('.nf').onclick=async()=>{const n=await ask('New folder','Name','New Folder');if(n)mkdir(norm(n,cwd))};
+  b.querySelector('.nt').onclick=async()=>{const n=await ask('New file','Name','untitled.txt');if(n)writeFile(norm(n,cwd),'')};
+  const onfs=()=>{if(!node(cwd))cwd='/home/kali';draw()};window.addEventListener('fschange',onfs);win.onclose.push(()=>window.removeEventListener('fschange',onfs));draw()}}));
+
+/* ================= Text editor ================= */
+reg('editor','Text Editor','Accessories','Edit files in the virtual filesystem',true,false,a=>openWindow({app:'editor',title:'Text Editor',icon:'editor',w:620,h:440,build:(win,b)=>{
+  let path=(a&&a.path)||'';b.innerHTML='<div class="app"><div class="rowf" style="padding:8px;border-bottom:1px solid var(--line)"><input class="fp mono" placeholder="/home/kali/notes.txt" style="flex:1;min-width:140px"><button class="btn op">Open</button><button class="btn pri sv">Save</button></div><textarea class="ta mono" spellcheck="false" style="flex:1;resize:none;border:0;border-radius:0;background:#060a14;padding:12px;font-size:13px;line-height:1.55;tab-size:2"></textarea><div class="muted mono st" style="padding:4px 10px;border-top:1px solid var(--line);font-size:12px"></div></div>';
+  const fp=b.querySelector('.fp'),ta=b.querySelector('.ta'),st=b.querySelector('.st');let dirty=false;
+  const stat=()=>{st.textContent=(dirty?'● modified  ':'')+ta.value.split('\n').length+' lines · '+ta.value.length+' chars'};
+  function load(p){const n=node(p);if(!n||n.t!=='f'){toast('File not found: '+p);return}path=p;fp.value=p;ta.value=n.d;dirty=false;win.setTitle('Editor — '+baseName(p));stat()}
+  function save(){const p=norm(fp.value||'/home/kali/untitled.txt','/home/kali');if(writeFile(p,ta.value)){path=p;fp.value=p;dirty=false;win.setTitle('Editor — '+baseName(p));stat();toast('Saved '+baseName(p))}else toast('Cannot save there')}
+  b.querySelector('.sv').onclick=save;b.querySelector('.op').onclick=()=>load(norm(fp.value,'/home/kali'));ta.oninput=()=>{dirty=true;stat()};
+  ta.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}if(e.key==='Tab'){e.preventDefault();const s=ta.selectionStart;ta.setRangeText('  ',s,ta.selectionEnd,'end');dirty=true;stat()}};
+  win.focusHook=()=>ta.focus();if(path)load(path);else{fp.value='/home/kali/untitled.txt';stat()}}}));
+
+/* ================= Portfolio ================= */
+const PORT={skills:{'Offensive':['Recon & OSINT','Web app testing (OWASP Top 10)','Network scanning','Wireless & social-engineering awareness'],'Defensive':['Hardening & Lynis audits','Firewall / WAF rules','Log analysis','Incident write-ups'],'Build':['JavaScript / Node.js','Python & Bash','Docker labs','nginx, Linux admin']},
+ projects:[['Recon Dashboard','Tracks hosts, open ports and service changes across a lab network and flags drift.','Python · nmap · SQLite'],['Packet Lab','Browser-based packet viewer for teaching TCP, DNS and TLS handshakes.','JavaScript · Canvas'],['Vuln-Lab in a Box','One-command Docker lab with intentionally vulnerable apps for practice.','Docker · Compose · Bash'],['Secure Notes API','End-to-end encrypted notes service with rate limiting and audit logs.','Node.js · PostgreSQL']],
+ certs:['CEH (planned)','eJPT','Security+','TryHackMe Top 1%','HackTheBox Pro Hacker (in progress)']};
+reg('portfolio','Portfolio','Accessories','About me, projects and contact',true,true,()=>openWindow({app:'portfolio',title:'Portfolio — '+OWNER.name,icon:'portfolio',w:820,h:560,build:(win,b)=>{
+  b.innerHTML='<div class="app"><div class="hero"><div class="tag">$ whoami</div><h1></h1><div class="muted" style="margin-top:6px"></div></div><div class="tabs"></div><div class="pv" style="flex:1;overflow:auto;padding:16px"></div></div>';
+  b.querySelector('h1').textContent=OWNER.name;b.querySelector('.muted').textContent=OWNER.role;
+  const T={About(){return`<p style="max-width:62ch;font-size:15px">${esc(OWNER.about)}</p><p class="muted">Tip: this whole desktop is a working sandbox. Open the Terminal and try <span class="mono" style="color:var(--green)">nmap -sV portfolio.lab</span> or <span class="mono" style="color:var(--green)">ethics</span>.</p><div class="rowf"><button class="btn pri" data-go="terminal">Open Terminal</button><button class="btn" data-go="software">Get more apps</button></div>`},
+   Projects(){return'<div class="grid">'+PORT.projects.map(p=>`<div class="card"><div><h4>${esc(p[0])}</h4><p>${esc(p[1])}</p><span class="chip">${esc(p[2])}</span></div></div>`).join('')+'</div>'},
+   Skills(){return Object.entries(PORT.skills).map(([k,v])=>`<div class="mh" style="padding-left:0">${k}</div>`+v.map(s=>`<span class="chip">${esc(s)}</span>`).join('')).join('')},
+   Certs(){return PORT.certs.map(c=>`<div class="card" style="margin-bottom:8px"><b>${esc(c)}</b></div>`).join('')},
+   Contact(){return`<div class="col mono" style="font-size:13px"><div>email  &nbsp;<span style="color:var(--cyan)">${esc(OWNER.email)}</span></div><div>github &nbsp;<span style="color:var(--cyan)">${esc(OWNER.github)}</span></div><p class="muted" style="font-family:var(--ui)">Edit the OWNER and PORT objects near the top of the page source to make this yours.</p></div>`}};
+  const tabs=b.querySelector('.tabs'),pv=b.querySelector('.pv');
+  const show=k=>{tabs.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.k===k));pv.innerHTML=T[k]();pv.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>launch(x.dataset.go))};
+  Object.keys(T).forEach(k=>{const t=el('button','tab',k);t.dataset.k=k;t.onclick=()=>show(k);tabs.append(t)});show('About')}}));
+
+/* ================= Software Center ================= */
+reg('software','Software','System','Install and remove apps',true,true,()=>openWindow({app:'software',title:'Software Center',icon:'software',w:720,h:500,build:(win,b)=>{
+  b.innerHTML='<div class="app"><div class="rowf" style="padding:10px;border-bottom:1px solid var(--line)"><input class="q" placeholder="Search tools and apps..." style="flex:1;min-width:160px"><span class="muted" style="font-size:12px">Same as: <span class="mono">sudo apt install &lt;name&gt;</span></span></div><div class="pv" style="flex:1;overflow:auto;padding:12px"></div></div>';
+  const pv=b.querySelector('.pv'),q=b.querySelector('.q');
+  function draw(){pv.innerHTML='';const f=q.value.toLowerCase();const items=Object.values(APPS).filter(a=>!a.sys&&(!f||(a.name+a.desc+a.cat+a.id).toLowerCase().includes(f)));const g=el('div','grid');items.forEach(a=>{const c=el('div','card');c.append(icon(a.id));const m=el('div','');m.style.minWidth='0';m.innerHTML=`<h4>${esc(a.name)}</h4><p>${esc(a.desc)}</p><div class="rowf"><span class="chip" style="margin:0">${esc(a.cat)}</span></div>`;const row=m.lastChild;const inst=isInstalled(a.id);const btn=el('button','btn'+(inst?'':' pri'),inst?'Open':'Install');btn.onclick=async()=>{if(isInstalled(a.id)){launch(a.id);return}btn.disabled=true;const bar=el('div','bar','<i style="width:0"></i>');m.append(bar);for(let i=1;i<=10;i++){await wait(110);bar.firstChild.style.width=i*10+'%'}installApp(a.id)};row.append(btn);if(inst){const rm=el('button','btn dng','Remove');rm.onclick=()=>uninstallApp(a.id);row.append(rm)}c.append(m);g.append(c)});pv.append(g);if(!items.length)pv.append(el('div','muted','No matches.'))}
+  q.oninput=draw;const on=()=>draw();window.addEventListener('appschange',on);win.onclose.push(()=>window.removeEventListener('appschange',on));draw()}}));
+
+/* ================= Settings ================= */
+reg('settings','Settings','System','Appearance and system options',true,true,()=>openWindow({app:'settings',title:'Settings',icon:'settings',w:520,h:460,build:(win,b)=>{
+  b.innerHTML=`<div class="pad col"><div class="mh" style="padding:0">Wallpaper</div><div class="rowf wp"></div><div class="mh" style="padding:0">Accent colour</div><div class="rowf ac"></div><div class="mh" style="padding:0">Clock</div><label class="rowf"><input type="checkbox" class="h24"> 24-hour time</label><div class="mh" style="padding:0">System</div><div class="rowf"><button class="btn rp">Replay boot sequence</button><button class="btn dng rs">Reset OS (files, apps, settings)</button></div><p class="muted" style="font-size:12.5px">Everything is stored in this browser only (localStorage). Clearing site data also resets the OS.</p></div>`;
+  const wp=b.querySelector('.wp'),ac=b.querySelector('.ac');['Blue grid','Violet','Green matrix','Slate'].forEach((n,i)=>{const x=el('button','btn'+(settings.wp===i?' pri':''),n);x.onclick=()=>{settings.wp=i;saveSettings();applyWall();wp.querySelectorAll('.btn').forEach((y,j)=>y.classList.toggle('pri',j===i))};wp.append(x)});
+  ['#367bf0','#8b5cf6','#22c55e','#f59e0b','#ef4444','#06b6d4'].forEach(c=>{const x=el('button','');x.setAttribute('aria-label','Accent '+c);x.style.cssText='width:30px;height:30px;border-radius:50%;border:2px solid '+(settings.accent===c?'#fff':'transparent')+';background:'+c;x.onclick=()=>{settings.accent=c;saveSettings();applyAccent();ac.querySelectorAll('button').forEach(y=>y.style.borderColor=y===x?'#fff':'transparent')};ac.append(x)});
+  const h=b.querySelector('.h24');h.checked=settings.h24;h.onchange=()=>{settings.h24=h.checked;saveSettings();tick()};
+  b.querySelector('.rp').onclick=restartOS;b.querySelector('.rs').onclick=async()=>{if(await confirmBox('Reset OS?','All files, installed apps and settings will be erased.')){store.clear();location.reload()}}}}));
+
+/* ================= System Monitor ================= */
+reg('monitor','System Monitor','System','Processes and resource usage',true,true,()=>openWindow({app:'monitor',title:'System Monitor',icon:'monitor',w:600,h:430,build:(win,b)=>{
+  b.innerHTML='<div class="app"><div style="padding:10px;border-bottom:1px solid var(--line)"><canvas class="cv" height="90" style="width:100%;height:90px;background:#060a14;border-radius:6px"></canvas><div class="rowf mono muted" style="font-size:12px;margin-top:6px"><span class="cpu"></span><span class="mem"></span></div></div><div style="flex:1;overflow:auto"><table class="tbl"><thead><tr><th>PID</th><th>Process</th><th>CPU%</th><th>MEM</th><th></th></tr></thead><tbody></tbody></table></div></div>';
+  const cv=b.querySelector('.cv'),cx=cv.getContext('2d'),tb=b.querySelector('tbody');const hist=Array(80).fill(8);let cpu=8;
+  const sysp=[[1,'systemd'],[812,'sshd'],[901,'nginx'],[1022,'node portfolio-api']];
+  function upd(){cpu=clamp(cpu+(Math.random()-.5)*10+wins.length*.15,2,95);hist.push(cpu);hist.shift();cv.width=cv.clientWidth||500;const w=cv.width,h=cv.height;cx.clearRect(0,0,w,h);cx.strokeStyle='#1d2b47';for(let i=1;i<4;i++){cx.beginPath();cx.moveTo(0,h*i/4);cx.lineTo(w,h*i/4);cx.stroke()}cx.beginPath();hist.forEach((v,i)=>{const x=i/(hist.length-1)*w,y=h-v/100*h;i?cx.lineTo(x,y):cx.moveTo(x,y)});cx.strokeStyle='#4fd8ff';cx.lineWidth=2;cx.stroke();b.querySelector('.cpu').textContent='CPU '+cpu.toFixed(0)+'%';b.querySelector('.mem').textContent='MEM '+(1.2+wins.length*.18).toFixed(1)+' / 8.0 GiB';
+   tb.innerHTML='';sysp.forEach(p=>tb.insertAdjacentHTML('beforeend',`<tr><td>${p[0]}</td><td>${p[1]}</td><td>${(Math.random()*2).toFixed(1)}</td><td>${(20+p[0]%90)} MiB</td><td></td></tr>`));wins.forEach(w=>{const tr=el('tr','',`<td>${w.pid}</td><td>${esc(w.app)} <span class="muted">(${esc(w.title)})</span></td><td>${(Math.random()*3).toFixed(1)}</td><td>${40+w.pid%80} MiB</td><td></td>`);const k=el('button','btn dng','Kill');k.style.padding='1px 8px';k.onclick=()=>w.close();tr.lastChild.append(k);tb.append(tr)})}
+  const iv=setInterval(upd,1000);win.onclose.push(()=>clearInterval(iv));upd()}}));
+
+/* ================= Installable apps ================= */
+const inst=(id,name,cat,desc,size,open)=>{reg(id,name,cat,desc,false,false,open);APPS[id].size=size};
+inst('calculator','Calculator','Accessories','Basic arithmetic with keyboard support','312 kB',()=>openWindow({app:'calculator',title:'Calculator',icon:'calc',w:300,h:430,build:(win,b)=>{
+  let ex='';b.innerHTML='<div class="app"><div class="calcd">0</div><div class="calc"></div></div>';const d=b.querySelector('.calcd'),g=b.querySelector('.calc');
+  const keys=['C','(',')','/','7','8','9','*','4','5','6','-','1','2','3','+','0','.','⌫','='];
+  const show=()=>d.textContent=ex||'0';const press=k=>{if(k==='C')ex='';else if(k==='⌫')ex=ex.slice(0,-1);else if(k==='='){try{if(/^[0-9+\-*/().\s]+$/.test(ex)&&ex)ex=String(+Function('"use strict";return ('+ex+')')().toFixed(10))}catch(e){ex='Error'}}else{if(ex==='Error')ex='';ex+=k}show()};
+  keys.forEach(k=>{const x=el('button',k==='='?'eq':'+-*/'.includes(k)?'op':'',k);x.onclick=()=>press(k);g.append(x)});
+  b.tabIndex=0;b.onkeydown=e=>{if(/^[0-9+\-*/().]$/.test(e.key))press(e.key);else if(e.key==='Enter')press('=');else if(e.key==='Backspace')press('⌫');else if(e.key==='Escape')press('C')};win.focusHook=()=>b.focus()}}));
+inst('snake','Snake','Games','Classic snake. Arrow keys, WASD or swipe','188 kB',()=>openWindow({app:'snake',title:'Snake',icon:'snake',w:380,h:460,build:(win,b)=>{
+  b.innerHTML='<div class="app" style="align-items:center;justify-content:center;background:#050a08"><div class="mono sc" style="padding:6px">Score 0</div><canvas width="340" height="340" style="max-width:100%;border:1px solid #1d4a2f;border-radius:6px" tabindex="0"></canvas><button class="btn rs" style="margin:8px">Restart</button></div>';
+  const cv=b.querySelector('canvas'),cx=cv.getContext('2d'),sc=b.querySelector('.sc'),N=17,S=20;let sn,dir,nd,food,score,dead,iv;
+  function reset(){sn=[[8,8],[7,8],[6,8]];dir=nd=[1,0];score=0;dead=false;place();sc.textContent='Score 0';clearInterval(iv);iv=setInterval(step,115);draw()}
+  function place(){do{food=[Math.floor(Math.random()*N),Math.floor(Math.random()*N)]}while(sn.some(s=>s[0]===food[0]&&s[1]===food[1]))}
+  function step(){if(dead)return;dir=nd;const h=[sn[0][0]+dir[0],sn[0][1]+dir[1]];if(h[0]<0||h[1]<0||h[0]>=N||h[1]>=N||sn.some(s=>s[0]===h[0]&&s[1]===h[1])){dead=true;draw();return}sn.unshift(h);if(h[0]===food[0]&&h[1]===food[1]){score++;sc.textContent='Score '+score;place()}else sn.pop();draw()}
+  function draw(){cx.fillStyle='#050a08';cx.fillRect(0,0,340,340);cx.fillStyle='#ff5c6c';cx.fillRect(food[0]*S+2,food[1]*S+2,S-4,S-4);sn.forEach((s,i)=>{cx.fillStyle=i?'#22c55e':'#7dff6b';cx.fillRect(s[0]*S+1,s[1]*S+1,S-2,S-2)});if(dead){cx.fillStyle='#000a';cx.fillRect(0,0,340,340);cx.fillStyle='#fff';cx.font='bold 22px JetBrains Mono,monospace';cx.textAlign='center';cx.fillText('Game over — '+score,170,175)}}
+  const key=e=>{const m={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]}[e.key];if(m&&!(m[0]===-dir[0]&&m[1]===-dir[1])){nd=m;e.preventDefault()}};
+  cv.addEventListener('keydown',key);let sx,sy;cv.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;cv.focus()});cv.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;const m=Math.abs(dx)>Math.abs(dy)?[dx>0?1:-1,0]:[0,dy>0?1:-1];if(!(m[0]===-dir[0]&&m[1]===-dir[1]))nd=m});cv.style.touchAction='none';
+  b.querySelector('.rs').onclick=()=>{reset();cv.focus()};win.focusHook=()=>cv.focus();win.onclose.push(()=>clearInterval(iv));reset()}}));
+inst('hashlab','Hash Lab','Password Attacks','Hash and encode text (SHA, Base64, hex, URL)','2.1 MB',()=>openWindow({app:'hashlab',title:'Hash Lab',icon:'hash',w:600,h:470,build:(win,b)=>{
+  b.innerHTML='<div class="pad col"><textarea class="in mono" rows="3" placeholder="Type or paste text..." style="resize:vertical">hello world</textarea><div class="out col mono" style="font-size:12px"></div></div>';const ta=b.querySelector('.in'),o=b.querySelector('.out');
+  const row=(k,v)=>`<div><span class="muted">${k}</span><div style="word-break:break-all;color:var(--green)">${esc(v)}</div></div>`;
+  async function go(){const t=ta.value;let h='';for(const a of['SHA-1','SHA-256','SHA-384','SHA-512'])h+=row(a,await digest(a,t));const hex=[...new TextEncoder().encode(t)].map(x=>x.toString(16).padStart(2,'0')).join('');let b64='';try{b64=btoa(unescape(encodeURIComponent(t)))}catch(e){}o.innerHTML=h+row('Base64',b64)+row('Hex',hex)+row('URL-encoded',encodeURIComponent(t))+row('Length',t.length+' chars, '+new TextEncoder().encode(t).length+' bytes')}
+  ta.oninput=go;go()}}));
+inst('cipherlab','Cipher Lab','Crypto','Classic ciphers: Caesar, ROT13, Atbash, Vigenere, Base64','1.4 MB',()=>openWindow({app:'cipherlab',title:'Cipher Lab',icon:'cipher',w:560,h:460,build:(win,b)=>{
+  b.innerHTML='<div class="pad col"><div class="rowf"><select class="m"><option>Caesar</option><option>ROT13</option><option>Atbash</option><option>Vigenere</option><option>Base64 encode</option><option>Base64 decode</option><option>Binary</option></select><label class="rowf">Shift/key <input class="k" value="3" style="width:90px"></label><label class="rowf"><input type="checkbox" class="dc"> decrypt</label></div><textarea class="in mono" rows="4">Attack at dawn</textarea><textarea class="out mono" rows="4" readonly></textarea></div>';
+  const m=b.querySelector('.m'),k=b.querySelector('.k'),dc=b.querySelector('.dc'),i=b.querySelector('.in'),o=b.querySelector('.out');
+  const sh=(t,n)=>t.replace(/[a-z]/gi,c=>{const base=c<='Z'?65:97;return String.fromCharCode((c.charCodeAt(0)-base+n+260)%26+base)});
+  function go(){const t=i.value,n=parseInt(k.value)||0,d=dc.checked?-1:1;let r='';try{switch(m.value){case'Caesar':r=sh(t,n*d);break;case'ROT13':r=sh(t,13);break;case'Atbash':r=t.replace(/[a-z]/gi,c=>{const base=c<='Z'?65:97;return String.fromCharCode(base+25-(c.charCodeAt(0)-base))});break;case'Vigenere':{const key=(k.value||'key').toLowerCase().replace(/[^a-z]/g,'')||'key';let j=0;r=t.replace(/[a-z]/gi,c=>{const s=key.charCodeAt(j++%key.length)-97;return sh(c,s*d)});break}case'Base64 encode':r=btoa(unescape(encodeURIComponent(t)));break;case'Base64 decode':r=decodeURIComponent(escape(atob(t.trim())));break;case'Binary':r=dc.checked?t.trim().split(/\s+/).map(x=>String.fromCharCode(parseInt(x,2))).join(''):[...t].map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ')}}catch(e){r='(invalid input for this mode)'}o.value=r}
+  [m,k,dc,i].forEach(x=>x.oninput=go);m.onchange=go;dc.onchange=go;go()}}));
+inst('passaudit','Password Auditor','Password Attacks','Estimate password strength offline in your browser','960 kB',()=>openWindow({app:'passaudit',title:'Password Auditor',icon:'pass',w:520,h:460,build:(win,b)=>{
+  b.innerHTML='<div class="pad col"><input class="pw mono" type="text" placeholder="Type a test password (never use a real one)" autocomplete="off"><div class="bar"><i style="width:0"></i></div><div class="sum mono" style="font-size:13px"></div><div class="chk col" style="font-size:13px"></div><p class="muted" style="font-size:12px">Runs locally. Estimates assume an offline attack at 10 billion guesses/second against a fast hash.</p></div>';
+  const COMMON=['password','123456','12345678','qwerty','letmein','admin','welcome','iloveyou','abc123','monkey','dragon','football','p@ssw0rd','passw0rd','kali','toor'];
+  const pw=b.querySelector('.pw'),bar=b.querySelector('.bar>i'),sum=b.querySelector('.sum'),chk=b.querySelector('.chk');
+  function go(){const p=pw.value;let pool=0;if(/[a-z]/.test(p))pool+=26;if(/[A-Z]/.test(p))pool+=26;if(/\d/.test(p))pool+=10;if(/[^a-zA-Z0-9]/.test(p))pool+=33;let bits=p?Math.log2(pool||1)*p.length:0;const low=p.toLowerCase();const com=COMMON.some(c=>low.includes(c)),rep=/(.)\1{2,}/.test(p)||/(012|123|234|345|456|567|678|789|abc|qwe)/i.test(p);if(com)bits=Math.min(bits,18);if(rep)bits*=.7;const secs=Math.pow(2,bits)/2/1e10;const fmt=s=>s<1?'instantly':s<60?Math.round(s)+' seconds':s<3600?Math.round(s/60)+' minutes':s<86400?Math.round(s/3600)+' hours':s<3.15e7?Math.round(s/86400)+' days':s<3.15e9?Math.round(s/3.15e7)+' years':'centuries';
+   const lvl=bits<28?['Very weak','#ff5c6c']:bits<46?['Weak','#ffa646']:bits<64?['Fair','#ffd45c']:bits<80?['Strong','#7dff6b']:['Excellent','#4fd8ff'];bar.style.width=clamp(bits/100)*100+'%';bar.style.background=lvl[1];sum.innerHTML=p?`<span style="color:${lvl[1]}">${lvl[0]}</span> · ${bits.toFixed(0)} bits · offline crack time: ${fmt(secs)}`:'Waiting for input...';
+   const rules=[[p.length>=12,'At least 12 characters'],[/[a-z]/.test(p)&&/[A-Z]/.test(p),'Upper and lower case'],[/\d/.test(p),'Contains a digit'],[/[^a-zA-Z0-9]/.test(p),'Contains a symbol'],[!com&&!!p,'Not a common password'],[!rep&&!!p,'No obvious runs or patterns']];chk.innerHTML=rules.map(r=>`<div style="color:${r[0]?'#7dff6b':'#7f92b0'}">${r[0]?'✓':'○'} ${r[1]}</div>`).join('')}
+  pw.oninput=go;go()}}));
+inst('sniffer','Packet Sniffer','Sniffing & Spoofing','Live packet capture view (simulated lab traffic)','4.8 MB',()=>openWindow({app:'sniffer',title:'Packet Sniffer — eth0',icon:'sniffer',w:760,h:500,build:(win,b)=>{
+  b.innerHTML='<div class="app"><div class="rowf" style="padding:8px;border-bottom:1px solid var(--line)"><button class="btn pri tg">Stop</button><button class="btn cl">Clear</button><input class="flt mono" placeholder="filter: tcp, dns, 10.10.14.7 ..." style="flex:1;min-width:140px"><span class="muted mono cnt" style="font-size:12px"></span></div><div style="flex:1;overflow:auto;min-height:80px" class="lst"><table class="tbl"><thead><tr><th>No.</th><th>Time</th><th>Source</th><th>Destination</th><th>Proto</th><th>Len</th><th>Info</th></tr></thead><tbody></tbody></table></div><pre class="det mono" style="margin:0;height:130px;overflow:auto;border-top:1px solid var(--line);padding:8px 10px;font-size:11.5px;background:#060a14;white-space:pre-wrap"></pre></div>';
+  const tb=b.querySelector('tbody'),det=b.querySelector('.det'),flt=b.querySelector('.flt'),cnt=b.querySelector('.cnt'),lst=b.querySelector('.lst'),tg=b.querySelector('.tg');
+  let n=0,run=true,pk=[],t0=Date.now(),selNo=null;const ME='10.10.14.2',PT='10.10.14.7',VL='10.10.14.20',GW='10.10.14.1';const pr=()=>Math.floor(Math.random()*20000)+40000;
+  const FL=[()=>{const p=pr();return[[ME,PT,'TCP',74,`${p} → 443 [SYN] Seq=0 Win=64240`],[PT,ME,'TCP',74,`443 → ${p} [SYN, ACK] Seq=0 Ack=1`],[ME,PT,'TCP',66,`${p} → 443 [ACK] Seq=1 Ack=1`],[ME,PT,'TLSv1.3',583,'Client Hello (SNI=portfolio.lab)'],[PT,ME,'TLSv1.3',1514,'Server Hello, Change Cipher Spec']]},()=>[[ME,GW,'DNS',74,'Standard query 0x'+Math.floor(Math.random()*65535).toString(16)+' A vuln-lab.lab'],[GW,ME,'DNS',90,'Standard query response A 10.10.14.20']],()=>[[ME,VL,'HTTP',402,'GET /login.php HTTP/1.1'],[VL,ME,'HTTP',1210,'HTTP/1.1 200 OK (text/html)']],()=>[[ME,PT,'ICMP',98,'Echo (ping) request id=0x0f21'],[PT,ME,'ICMP',98,'Echo (ping) reply id=0x0f21']],()=>[['52:54:00:C3:00:01','Broadcast','ARP',42,'Who has 10.10.14.2? Tell 10.10.14.1']],()=>[[ME,PT,'SSH',130,'Client: Encrypted packet (len=64)'],[PT,ME,'SSH',130,'Server: Encrypted packet (len=64)']]];
+  const add=p=>{n++;pk.push({no:n,t:((Date.now()-t0)/1000).toFixed(6),s:p[0],d:p[1],pr:p[2],len:p[3],info:p[4]});if(pk.length>300)pk.shift()};
+  const hex=p=>{const seed=p.no*7919;let o='';for(let r=0;r<4;r++){let h='',a='';for(let c=0;c<16;c++){const v=(seed*(r*16+c+3)+31)&255;h+=v.toString(16).padStart(2,'0')+' ';a+=v>31&&v<127?String.fromCharCode(v):'.'}o+=(r*16).toString(16).padStart(4,'0')+'  '+h+' '+a+'\n'}return o};
+  function draw(){const f=flt.value.toLowerCase();tb.innerHTML='';const rows=pk.filter(p=>!f||(p.s+p.d+p.pr+p.info).toLowerCase().includes(f));rows.slice(-120).forEach(p=>{const tr=el('tr',p.no===selNo?'sel':'',`<td>${p.no}</td><td>${p.t}</td><td>${esc(p.s)}</td><td>${esc(p.d)}</td><td style="color:${{TCP:'#a78bfa',DNS:'#4fd8ff',HTTP:'#7dff6b',ICMP:'#ffd45c',ARP:'#ffa646','TLSv1.3':'#5da2ff',SSH:'#d98cff'}[p.pr]||'#fff'}">${p.pr}</td><td>${p.len}</td><td>${esc(p.info)}</td>`);tr.onclick=()=>{selNo=p.no;det.textContent=`Frame ${p.no}: ${p.len} bytes on wire (eth0)\nEthernet II, Src: ${p.s.includes(':')?p.s:'52:54:00:12:34:56'}\nInternet Protocol, Src: ${p.s}, Dst: ${p.d}\n${p.pr} — ${p.info}\n\n${hex(p)}`;draw()};tb.append(tr)});cnt.textContent=pk.length+' packets';if(run)lst.scrollTop=lst.scrollHeight}
+  const iv=setInterval(()=>{if(!run)return;FL[Math.floor(Math.random()*FL.length)]().forEach(add);draw()},650);
+  tg.onclick=()=>{run=!run;tg.textContent=run?'Stop':'Start'};b.querySelector('.cl').onclick=()=>{pk=[];draw()};flt.oninput=draw;win.onclose.push(()=>clearInterval(iv));FL[0]().forEach(add);draw()}}));
+inst('zenscan','Network Scanner','Information Gathering','Graphical nmap front-end for the lab network','3.6 MB',()=>openWindow({app:'zenscan',title:'Network Scanner',icon:'scanner',w:680,h:480,build:(win,b)=>{
+  b.innerHTML='<div class="app"><div class="rowf" style="padding:8px;border-bottom:1px solid var(--line)"><label class="rowf">Target <input class="tg mono" value="portfolio.lab" list="tl" style="width:150px"><datalist id="tl"><option value="portfolio.lab"><option value="vuln-lab.lab"><option value="gateway.lab"><option value="10.10.14.0/24"><option value="127.0.0.1"></datalist></label><select class="pf"><option value="-sV">Version scan</option><option value="-A">Intense scan</option><option value="-sC -sV">Default scripts</option><option value="-p-">All ports</option><option value="-sn">Ping sweep</option></select><button class="btn pri go">Scan</button><button class="btn st">Stop</button></div><pre class="term tout" style="flex:1;margin:0;overflow:auto;padding:10px;font:12.5px/1.5 var(--mono);background:#05080e"></pre></div>';
+  const out=b.querySelector('pre'),T={abort:false};const io={w:s=>{out.insertAdjacentHTML('beforeend',ansi(s));out.scrollTop=out.scrollHeight}};let busy=false;
+  b.querySelector('.go').onclick=async()=>{if(busy)return;busy=true;T.abort=false;out.innerHTML='';const tg=b.querySelector('.tg').value.trim();const fl=b.querySelector('.pf').value.split(' ');let tgt=tg;if(fl[0]==='-sn'&&/^10\.10\.14\.0\/24$/.test(tg)){}io.w(`${C.d}$ nmap ${fl.join(' ')} ${esc(tg)}${C.x}\n`);try{await nmapRun([...fl,tgt],io,T)}catch(e){io.w(String(e))}busy=false};
+  b.querySelector('.st').onclick=()=>T.abort=true;out.innerHTML=ansi(`${C.d}Pick a lab target and press Scan. Only the simulated lab network is reachable.${C.x}\n`)}}));
+inst('cmatrix','Matrix Rain','Games','Falling-code screensaver','90 kB',()=>openWindow({app:'cmatrix',title:'Matrix Rain',icon:'matrix',w:460,h:340,build:(win,b)=>{
+  b.style.overflow='hidden';b.innerHTML='<canvas style="display:block;width:100%;height:100%;background:#000"></canvas>';const cv=b.firstChild,cx=cv.getContext('2d');let cols=[];const FS=15;
+  function sz(){cv.width=b.clientWidth||460;cv.height=b.clientHeight||300;cols=Array(Math.ceil(cv.width/FS)).fill(0).map(()=>Math.random()*-30)}
+  const ch='アイウエオ01234567890ABCDEFZ$#<>';const iv=setInterval(()=>{if(cv.width!==b.clientWidth||cv.height!==b.clientHeight)sz();cx.fillStyle='#0008';cx.fillRect(0,0,cv.width,cv.height);cx.font=FS+'px JetBrains Mono,monospace';cols.forEach((y,i)=>{cx.fillStyle=Math.random()>.96?'#fff':'#22ff66';cx.fillText(ch[Math.floor(Math.random()*ch.length)],i*FS,y*FS);cols[i]=y*FS>cv.height&&Math.random()>.975?0:y+1})},55);win.onclose.push(()=>clearInterval(iv));sz()}}));
+/* ================= boot film (plays once, no loop) ================= */
+let run=0,introDone=true;const sleepI=ms=>{const k=run;return new Promise((res,rej)=>setTimeout(()=>k!==run?rej('skip'):res(),ms))};
+const intro=$('#intro'),pcv=$('#pc'),gcv=$('#globe'),itm=$('#iterm'),ib=$('#ibody');
+function fit(c){const r=devicePixelRatio||1;c.width=intro.clientWidth*r;c.height=intro.clientHeight*r;return r}
+function drawPC(t){const r=fit(pcv),c=pcv.getContext('2d'),W=pcv.width,H=pcv.height;c.clearRect(0,0,W,H);const g=c.createRadialGradient(W/2,H/2,20,W/2,H/2,Math.max(W,H)*.7);g.addColorStop(0,'#14233d');g.addColorStop(1,'#04060b');c.fillStyle=g;c.fillRect(0,0,W,H);
+ const s=Math.min(W/880,H/640),z=1+ease(clamp((t-4.1)/1.3))*3.4,cy=290-70*clamp((t-4.1)/1.3);c.save();c.translate(W/2,H/2);c.scale(s*z,s*z);c.translate(-400,-cy);
+ const rr=(x,y,w,h,q)=>{c.beginPath();c.roundRect(x,y,w,h,q)};
+ c.fillStyle='#1b2433';rr(40,200,92,250,8);c.fill();c.strokeStyle='#2c3a52';c.lineWidth=2;c.stroke();c.beginPath();c.arc(86,400,14,0,7);c.stroke();c.fillStyle='#2c3a52';c.fillRect(60,230,52,6);c.fillRect(60,244,52,6);
+ c.fillStyle='#222c3d';rr(180,80,440,290,12);c.fill();c.strokeStyle='#3a4a66';c.stroke();
+ const on=clamp((t-1.2)/.5);c.fillStyle='#04060a';c.fillRect(198,98,404,226);
+ if(on>0){c.globalAlpha=on;c.fillStyle='#0a49c9';c.fillRect(198,98,404,226);c.fillStyle='#cfe4ff';c.font='bold 22px JetBrains Mono,monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('Opening...',400,190);c.fillStyle='#06307f';c.fillRect(230,222,340,12);c.fillStyle='#6fb2ff';c.fillRect(230,222,340*ease(clamp((t-1.6)/2.2)),12);c.textAlign='left';c.globalAlpha=1}
+ c.fillStyle='#222c3d';c.fillRect(372,370,56,46);rr(320,414,160,14,6);c.fill();
+ c.fillStyle='#1b2433';rr(210,470,380,56,8);c.fill();c.fillStyle='#2c3a52';for(let q=0;q<3;q++)for(let k=0;k<16;k++)c.fillRect(222+k*22.5,481+q*15,18,10);rr(630,474,32,50,15);c.fillStyle='#1b2433';c.fill();c.restore();
+ c.fillStyle='#7f92b0';c.font=`${12*r}px JetBrains Mono,monospace`;c.textAlign='center';c.globalAlpha=1-clamp((t-3.6)/.6);c.fillText('KALIFOLIO  ·  secure workstation  ·  powering on',W/2,H-30*r);c.globalAlpha=1}
+const PROMPT=`<span class="pb">┌──(</span><span class="pu">root㉖kali</span><span class="pb">)-[</span><span class="pd">~/portfolio</span><span class="pb">]</span>\n<span class="pb">└─# </span>`;
+function iscroll(){ib.scrollTop=ib.scrollHeight}
+async function itype(cmd,sp=22){const d=el('div','',PROMPT+'<span class="ty"></span><span class="caret"></span>');ib.append(d);const ty=d.querySelector('.ty');for(const ch of cmd){ty.textContent+=ch;await sleepI(sp+Math.random()*18)}await sleepI(260);d.querySelector('.caret').remove()}
+async function iout(lines,dl=70){for(const l of lines){const d=el('div','',ansi(l));ib.append(d);await sleepI(dl)}}
+const OK=`${C.d}[ ${C.x}${C.g}OK${C.x}${C.d} ]${C.x} `;
+async function runIntro(){run++;introDone=false;intro.style.opacity=1;intro.hidden=false;pcv.style.opacity=1;itm.style.opacity=0;gcv.style.opacity=0;ib.innerHTML='';$('#os').classList.remove('on');
+ const k=run;try{
+  const t0=performance.now();await new Promise((res,rej)=>{const f=()=>{if(k!==run)return rej('skip');const t=(performance.now()-t0)/1000;drawPC(t);if(t<5.3)requestAnimationFrame(f);else res()};f()});
+  pcv.style.opacity=0;itm.style.opacity=1;await sleepI(700);
+  await itype('sudo systemctl start portfolio-server');
+  await iout([OK+'Starting nginx reverse proxy ............ done',OK+'Starting node portfolio-api on :3000 ...... done',OK+'Loading TLS certificate (expires in 71 days)',OK+'Enabling ufw firewall: default deny incoming'],130);
+  await sleepI(350);await itype('nmap -sV -sC -p- --open 10.10.14.7');
+  await iout([`${C.d}# authorized lab host only — scope: 10.10.14.0/24${C.x}`,'Starting Nmap 7.95 ( https://nmap.org )','Nmap scan report for portfolio.lab (10.10.14.7)','Host is up (0.00042s latency).',`${C.B}PORT      STATE SERVICE   VERSION${C.x}`,`22/tcp    ${C.g}open${C.x}  ssh       OpenSSH 9.6p1`,`80/tcp    ${C.g}open${C.x}  http      nginx 1.24.0 (redirect to HTTPS)`,`443/tcp   ${C.g}open${C.x}  ssl/http  nginx 1.24.0`,`3000/tcp  ${C.g}open${C.x}  http      Node.js Express`,'Nmap done: 1 IP address (1 host up) scanned in 11.82 seconds'],110);
+  await sleepI(350);await itype('nikto -h https://portfolio.lab && gobuster dir -u https://portfolio.lab');
+  await iout(['+ Strict-Transport-Security header is present '+C.g+'(good)'+C.x,'+ X-Frame-Options / X-Content-Type-Options present '+C.g+'(good)'+C.x,'+ 0 error(s) and 0 high findings','/about     (Status: '+C.g+'200'+C.x+')','/projects  (Status: '+C.g+'200'+C.x+')','/admin     (Status: '+C.y+'403'+C.x+')   '+C.d+'access denied, as intended'+C.x],110);
+  await sleepI(350);await itype('lynis audit system --quick');
+  await iout(['Boot and services       [ '+C.g+'OK'+C.x+' ]','SSH configuration       [ '+C.g+'OK'+C.x+' ]','Hardening index : '+C.g+'92'+C.x+' [##################  ]'],140);
+  await sleepI(350);await itype('echo "hello world"');await iout([`${C.B}hello world${C.x}`],10);
+  /* globe */
+  gcv.style.opacity=1;await new Promise((res,rej)=>{const t0=performance.now();const f=()=>{if(k!==run)return rej('skip');const t=(performance.now()-t0)/1000;drawGlobe(t);if(t<8)requestAnimationFrame(f);else res()};f()});
+  gcv.style.opacity=0;await sleepI(800);
+  await itype('./launch-kalifolio-os.sh');
+  const bar=el('div');ib.append(bar);for(let p=0;p<=100;p+=5){const n=Math.round(p/5);bar.innerHTML=ansi(`${C.c}Mounting virtual filesystem, starting window manager, loading portfolio...${C.x}\n[${'#'.repeat(n)}${'.'.repeat(20-n)}] ${p}%`);await sleepI(110)}
+  await iout([`${C.g}Welcome. Opening desktop...${C.x}`],700)
+ }catch(e){if(e!=='skip')console.error(e)}
+ if(k===run)finishIntro()}
+const GREET=["Hello World","Hola Mundo","Bonjour le monde","Hallo Welt","Ciao mondo","Olá Mundo","こんにちは世界","你好，世界","안녕하세요 세계","नमस्ते दुनिया","مرحبا بالعالم","Привет, мир","Γειά σου Κόσμε","வணக்கம் உலகம்","হ্যালো বিশ্ব","Merhaba Dünya","Hej världen","Hallo wereld","Witaj świecie","Sawubona Mhlaba","Habari dunia","สวัสดีชาวโลก","Xin chào thế giới","Kamusta mundo","שלום עולם","Hei maailma","Ahoj světe","నమస్కారం ప్రపంచం","ಹಲೋ ವರ್ಲ್ಡ್","നമസ്കാരം ലോകം","ਹੈਲੋ ਵਰਲਡ","Salut lume","Helló világ","Halo dunia"];
+const PAL=["#7dff6b","#ffa646","#4da3ff","#ffe15c","#5fe6c4"];let sd=7;const rnd=()=>(sd=sd*16807%2147483647)/2147483647;
+const GP=Array.from({length:320},(_,i)=>({y:1-2*(i+.5)/320,th:i*2.399963,txt:GREET[i%GREET.length],col:PAL[(i*7+(i>>2))%PAL.length],at:rnd()*4.4}));
+function drawGlobe(t){const r=fit(gcv),c=gcv.getContext('2d'),W=gcv.width,H=gcv.height;c.clearRect(0,0,W,H);c.fillStyle='#000c';c.fillRect(0,0,W,H);const cx=W/2,cy=H/2,grow=ease(clamp(t/3.4)),R=(40+Math.min(W,H)*.34*grow*1)*1,rot=t*.55;
+ const o=GP.map(p=>{const a=p.th+rot,q=Math.sqrt(1-p.y*p.y);return{p,x:q*Math.cos(a),z:q*Math.sin(a)}}).sort((a,b)=>a.z-b.z);c.textAlign='center';
+ for(const e of o){const k=clamp((t-e.p.at)/.6);if(k<=0)continue;const zn=(e.z+1)/2,fs=(9+8*zn)*(.55+.45*grow)*r*Math.min(1.3,Math.min(W,H)/(700*r));c.save();c.translate(cx+e.x*R,cy-e.p.y*R);c.scale(Math.max(.18,Math.abs(e.z)*.85+.15),1);c.globalAlpha=k*(.22+.78*zn);c.fillStyle=e.p.col;c.font=`bold ${fs.toFixed(1)}px JetBrains Mono,monospace`;c.fillText(e.p.txt,0,0);c.restore()}
+ c.globalAlpha=clamp((t-4)/1);c.fillStyle='#d6e3f5';c.font=`${13*r}px JetBrains Mono,monospace`;c.fillText('hello world · 世界 · مرحبا · namaste · hola',cx,cy+R+34*r);c.globalAlpha=1}
+
+/* ================= boot / power ================= */
+function finishIntro(){if(introDone)return;introDone=true;run++;intro.style.opacity=0;setTimeout(()=>{intro.hidden=true},800);bootOS()}
+function bootOS(){const os=$('#os');applyAccent();applyWall();renderIcons();renderTasks();tick();requestAnimationFrame(()=>os.classList.add('on'));if(!wins.length)setTimeout(()=>{const w=launch('portfolio');if(w&&!small())w.el.classList.add('max');},500)}
+function restartOS(){[...wins].forEach(w=>w.close());$('#menu').hidden=true;runIntro()}
+function powerOff(){[...wins].forEach(w=>w.close());$('#os').classList.remove('on');const d=el('div','dlg','<div style="text-align:center;background:#000"><div class="mono muted">System halted.</div><button class="btn pri">Power on</button></div>');d.style.background='#000';document.body.append(d);d.querySelector('button').onclick=()=>{d.remove();runIntro()}}
+$('#skip').onclick=finishIntro;
+addEventListener('resize',()=>{wins.forEach(w=>{if(small())w.el.classList.add('max');w.resize&&w.resize()})});
+renderDock();
+(location.hash==='#skip')?(intro.hidden=true,introDone=true,bootOS()):runIntro();
+})();
+</script>
+
+</body></html>
